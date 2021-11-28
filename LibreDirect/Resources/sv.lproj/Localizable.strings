@@ -272,7 +272,7 @@
 "Sensor PatchInfo" = "PatchInfo";
 
 /* (No Comment) */
-"Sensor Possible Lifetime" = "Sensorns möjliga Livstid";
+"Sensor Possible Lifetime" = "Maximal livstid";
 
 /* (No Comment) */
 "Sensor Region" = "Region";
