@@ -361,3 +361,11 @@
 /* (No Comment) */
 "Your sensor is about to expire. Replace sensor in %1$@ minutes." = "Your sensor is about to expire. Replace sensor in %1$@ minutes.";
 
+/* (No Comment) */
+"Other Settings" = "Other Settings";
+
+/* (No Comment) */
+"Glucose badge" = "Glucose badge";
+
+/* (No Comment) */
+"Are you sure you want to add the new blood glucose value?" = "Are you sure you want to add the new blood glucose value?";
