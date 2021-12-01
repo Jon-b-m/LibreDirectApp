@@ -1,4 +1,3 @@
-        [
 //
 //  Transmitter.swift
 //  LibreDirect
