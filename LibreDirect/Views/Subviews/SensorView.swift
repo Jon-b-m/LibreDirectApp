@@ -44,19 +44,19 @@ struct SensorView: View {
     }
 
     var body: some View {
-        if let sensor = store.state.sensor {
-            Group {
+        Group {
+            if store.state.isPaired {
                 Section(
                     content: {
                         HStack {
-                            Text("Sensor Connection State")
+                            Text("Connection State")
                             Spacer()
                             Text(store.state.connectionState.localizedString).textSelection(.enabled)
                         }
 
                         if store.state.missedReadings > 0 {
                             HStack {
-                                Text("Sensor Missed Readings")
+                                Text("Missed Readings")
                                 Spacer()
                                 Text(store.state.missedReadings.description).textSelection(.enabled)
                             }
@@ -64,7 +64,7 @@ struct SensorView: View {
 
                         if let connectionError = store.state.connectionError {
                             HStack {
-                                Text("Sensor Connection Error")
+                                Text("Connection Error")
                                 Spacer()
                                 Text(connectionError).textSelection(.enabled)
                             }
@@ -72,17 +72,56 @@ struct SensorView: View {
 
                         if let connectionErrorTimestamp = store.state.connectionErrorTimestamp?.localTime {
                             HStack {
-                                Text("Sensor Connection Error Timestamp")
+                                Text("Connection Error Timestamp")
                                 Spacer()
                                 Text(connectionErrorTimestamp).textSelection(.enabled)
                             }
                         }
                     },
                     header: {
-                        Label("Sensor Connection", systemImage: "rectangle.connected.to.line.below")
+                        Label("Connection", systemImage: "rectangle.connected.to.line.below")
                     }
                 )
+            }
 
+            if let transmitter = store.state.transmitter {
+                Section(
+                    content: {
+                        HStack {
+                            Text("Transmitter Name")
+                            Spacer()
+                            Text(transmitter.name).textSelection(.enabled)
+                        }
+
+                        HStack {
+                            Text("Transmitter Battery")
+                            Spacer()
+                            Text(transmitter.battery.description).textSelection(.enabled)
+                        }
+
+                        if let hardware = transmitter.hardware {
+                            HStack {
+                                Text("Transmitter Hardware")
+                                Spacer()
+                                Text(hardware.description).textSelection(.enabled)
+                            }
+                        }
+
+                        if let firmware = transmitter.firmware {
+                            HStack {
+                                Text("Transmitter Firmware")
+                                Spacer()
+                                Text(firmware.description).textSelection(.enabled)
+                            }
+                        }
+                    },
+                    header: {
+                        Label("Transmitter Details", systemImage: "antenna.radiowaves.left.and.right.circle")
+                    }
+                )
+            }
+
+            if let sensor = store.state.sensor {
                 Section(
                     content: {
                         HStack {
@@ -216,12 +255,12 @@ struct SensorView: View {
                         Label("Sensor Lifetime", systemImage: "timer")
                     }
                 )
-            }.onChange(of: colorScheme) { scheme in
-                Log.info("onChange colorScheme: \(scheme)")
+            }
+        }.onChange(of: colorScheme) { scheme in
+            Log.info("onChange colorScheme: \(scheme)")
 
-                if deviceColorScheme != scheme {
-                    deviceColorScheme = scheme
-                }
+            if deviceColorScheme != scheme {
+                deviceColorScheme = scheme
             }
         }
     }
