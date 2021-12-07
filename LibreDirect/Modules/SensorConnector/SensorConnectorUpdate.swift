@@ -5,13 +5,13 @@
 
 import Foundation
 
-// MARK: - SensorServiceUpdate
+// MARK: - SensorConnectorUpdate
 
-class SensorServiceUpdate {}
+class SensorConnectorUpdate {}
 
 // MARK: - SensorTransmitterUpdate
 
-class SensorTransmitterUpdate: SensorServiceUpdate {
+class SensorTransmitterUpdate: SensorConnectorUpdate {
     // MARK: Lifecycle
 
     init(transmitter: Transmitter) {
@@ -25,10 +25,10 @@ class SensorTransmitterUpdate: SensorServiceUpdate {
 
 // MARK: - SensorStateUpdate
 
-class SensorStateUpdate: SensorServiceUpdate {
+class SensorStateUpdate: SensorConnectorUpdate {
     // MARK: Lifecycle
 
-    init(sensorAge: Int, sensorState: SensorState) {
+    init(sensorAge: Int, sensorState: SensorState?) {
         self.sensorAge = sensorAge
         self.sensorState = sensorState
     }
@@ -36,12 +36,12 @@ class SensorStateUpdate: SensorServiceUpdate {
     // MARK: Internal
 
     let sensorAge: Int
-    let sensorState: SensorState
+    let sensorState: SensorState?
 }
 
 // MARK: - SensorConnectionStateUpdate
 
-class SensorConnectionStateUpdate: SensorServiceUpdate {
+class SensorConnectionStateUpdate: SensorConnectorUpdate {
     // MARK: Lifecycle
 
     init(connectionState: SensorConnectionState) {
@@ -55,21 +55,21 @@ class SensorConnectionStateUpdate: SensorServiceUpdate {
 
 // MARK: - SensorUpdate
 
-class SensorUpdate: SensorServiceUpdate {
+class SensorUpdate: SensorConnectorUpdate {
     // MARK: Lifecycle
 
-    init(sensor: Sensor) {
+    init(sensor: Sensor?) {
         self.sensor = sensor
     }
 
     // MARK: Internal
 
-    let sensor: Sensor
+    let sensor: Sensor?
 }
 
 // MARK: - SensorReadingUpdate
 
-class SensorReadingUpdate: SensorServiceUpdate {
+class SensorReadingUpdate: SensorConnectorUpdate {
     // MARK: Lifecycle
 
     init(nextReading: SensorReading?, trendReadings: [SensorReading] = [], historyReadings: [SensorReading] = []) {
@@ -87,7 +87,7 @@ class SensorReadingUpdate: SensorServiceUpdate {
 
 // MARK: - SensorErrorUpdate
 
-class SensorErrorUpdate: SensorServiceUpdate {
+class SensorErrorUpdate: SensorConnectorUpdate {
     // MARK: Lifecycle
 
     init(errorMessage: String) {

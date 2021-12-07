@@ -1,21 +1,19 @@
 //
-//  SensorConnection.swift
+//  Libre2Connection.swift
 //  LibreDirect
-//
-//  Special thanks to: guidos
 //
 
 import Combine
 import CoreBluetooth
 import Foundation
 
-// MARK: - Libre2Service
+// MARK: - Libre2Connection
 
-@available(iOS 15.0, *)
-final class Libre2Service: SensorService {
+final class Libre2Connection: SensorBLEConnection {
     // MARK: Lifecycle
 
     init() {
+        Log.info("init")
         super.init(serviceUuid: [CBUUID(string: "FDE3")])
     }
 
@@ -23,33 +21,38 @@ final class Libre2Service: SensorService {
 
     let expectedBufferSize = 46
 
-    var writeCharacteristicUuid = CBUUID(string: "F001")
-    var readCharacteristicUuid = CBUUID(string: "F002")
+    let writeCharacteristicUuid = CBUUID(string: "F001")
+    let readCharacteristicUuid = CBUUID(string: "F002")
 
     var readCharacteristic: CBCharacteristic?
     var writeCharacteristic: CBCharacteristic?
 
-    func pairSensor(updatesHandler: @escaping SensorUpdatesHandler) {
+    override func pairSensor(updatesHandler: @escaping SensorConnectionHandler) {
         dispatchPrecondition(condition: .notOnQueue(managerQueue))
         Log.info("PairSensor")
-        
+
         self.updatesHandler = updatesHandler
+
+        UserDefaults.standard.peripheralUuid = nil
+        UserDefaults.standard.libre2UnlockCount = 0
+
+        sendUpdate(connectionState: .pairing)
 
         Task {
             let pairingService = Libre2Pairing()
             let pairedSensor = await pairingService.pairSensor()
 
-            UserDefaults.standard.libre2UnlockCount = 0
-
             if let pairedSensor = pairedSensor {
                 sendUpdate(sensor: pairedSensor)
-                
+
                 if let fram = pairedSensor.fram, pairedSensor.state == .ready {
-                    let parsedFram = Libre2.parseFRAM(calibration: pairedSensor.factoryCalibration, pairingTimestamp: pairedSensor.pairingTimestamp, fram: fram)
-                    
+                    let parsedFram = SensorUtility.parseFRAM(calibration: pairedSensor.factoryCalibration, pairingTimestamp: pairedSensor.pairingTimestamp, fram: fram)
+
                     sendUpdate(trendReadings: parsedFram.trend, historyReadings: parsedFram.history)
                 }
             }
+
+            sendUpdate(connectionState: .disconnected)
         }
     }
 
@@ -63,11 +66,9 @@ final class Libre2Service: SensorService {
 
         UserDefaults.standard.libre2UnlockCount = UserDefaults.standard.libre2UnlockCount + 1
 
-        let unlockPayload = Libre2.streamingUnlockPayload(sensorUID: sensor!.uuid, info: sensor!.patchInfo, enableTime: 42, unlockCount: UInt16(UserDefaults.standard.libre2UnlockCount))
+        let unlockPayload = SensorUtility.streamingUnlockPayload(uuid: sensor!.uuid, patchInfo: sensor!.patchInfo, enableTime: 42, unlockCount: UInt16(UserDefaults.standard.libre2UnlockCount))
         return Data(unlockPayload)
     }
-
-    // MARK: - CBCentralManagerDelegate
 
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
         dispatchPrecondition(condition: .onQueue(managerQueue))
@@ -91,17 +92,6 @@ final class Libre2Service: SensorService {
             }
         }
     }
-
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
-        Log.info("Peripheral: \(peripheral)")
-
-        sendUpdate(connectionState: .connected)
-
-        peripheral.discoverServices(serviceUuid)
-    }
-
-    // MARK: - CBPeripheralDelegate
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         dispatchPrecondition(condition: .onQueue(managerQueue))
@@ -176,14 +166,16 @@ final class Libre2Service: SensorService {
         if rxBuffer.count == expectedBufferSize {
             if let sensor = sensor {
                 do {
-                    let decryptedBLE = Data(try Libre2.decryptBLE(sensorUID: sensor.uuid, data: rxBuffer))
-                    let parsedBLE = Libre2.parseBLE(calibration: sensor.factoryCalibration, data: decryptedBLE)
+                    let decryptedBLE = Data(try SensorUtility.decryptBLE(uuid: sensor.uuid, data: rxBuffer))
+                    let parsedBLE = SensorUtility.parseBLE(calibration: sensor.factoryCalibration, data: decryptedBLE)
 
                     if parsedBLE.age >= sensor.lifetime {
                         sendUpdate(age: parsedBLE.age, state: .expired)
+
                     } else if parsedBLE.age > sensor.warmupTime {
                         sendUpdate(age: parsedBLE.age, state: .ready)
                         sendUpdate(trendReadings: parsedBLE.trend, historyReadings: parsedBLE.history)
+
                     } else if parsedBLE.age <= sensor.warmupTime {
                         sendUpdate(age: parsedBLE.age, state: .starting)
                     }
@@ -196,8 +188,6 @@ final class Libre2Service: SensorService {
         }
     }
 }
-
-// MARK: - fileprivate
 
 private extension UserDefaults {
     enum Keys: String {
