@@ -2,9 +2,7 @@
 
 **Warning, the project is strictly for my personal use and is highly experimental.**
 
-This is my App for Libre 2/Libre 1 blood glucose sensors, Swift and SwiftUI ([TestFlight](https://testflight.apple.com/join/dWDt5Wme)).
-
-I try to keep the code as readable and understandable as possible so that as many people as possible can understand how this part of diabetes management works.
+App programmed in Swift/SwiftUI for using Libre 1/2 blood glucose sensors. I try to keep the code as readable and understandable as possible so that as many people as possible can understand how this part of diabetes management works.
 
 ## Current features
 - Libre 2 EU support (without transmitter)
@@ -14,6 +12,7 @@ I try to keep the code as readable and understandable as possible so that as man
 - Units mg/dL or mmol/L
 - Nightscout upload
 - FreeAPS X support (with Shared App Groups)
+- Calendar export
 - Glucose badge
 - Glucose chart
 - Glucose trend arrow
