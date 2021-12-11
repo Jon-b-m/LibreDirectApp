@@ -305,10 +305,10 @@
 "The connection to the sensor seems to exist, but no values are received. Faulty sensor data may be the cause." = "En anslutning till sensor verkar finnas, men inga värden har erhållits";
 
 /* (No Comment) */
-"The connection with the sensor has been interrupted. Normally this happens when the sensor is out of range or its transmission power is impaired." = "The connection with the sensor has been interrupted. Normally this happens when the sensor is out of range or its transmission power is impaired.";
+"The connection with the sensor has been interrupted. Normally this happens when the sensor is out of range or its transmission power is impaired." = "Anslutningen till sensorn har avbrutits. Normalt händer detta när sensorn är utom räckvidd eller när dess överföringskapacitet är nedsatt.";
 
 /* (No Comment) */
-"The sensor cannot be connected and rejects all connection attempts. This problem makes it necessary to re-pair the sensor." = "The sensor cannot be connected and rejects all connection attempts. This problem makes it necessary to re-pair the sensor.";
+"The sensor cannot be connected and rejects all connection attempts. This problem makes it necessary to re-pair the sensor." = "Sensorn kan inte anslutas och avvisar alla anslutningsförsök. Detta problem gör det nödvändigt att göra en ny parkoppling av sensorn. ";
 
 /* (No Comment) */
 "Unknown" = "Okänd";
@@ -404,7 +404,7 @@
 "Pairing" = "Parkopplar";
 
 /* (No Comment) */
-"Calendar export" = "Kalenderexport";
+"Calendar export" = "Exportera kalender";
 
 /* (No Comment) */
 "Calendar export enabled" = "Exportera";
@@ -414,3 +414,51 @@
 
 /* (No Comment) */
 "Please select" = "Välj";
+
+/* (No Comment) */
+"About %@" = "About %@";
+
+/* (No Comment) */
+"App Version" = "Version";
+
+/* (No Comment) */
+"Unknown" = "Unknown";
+
+/* (No Comment) */
+"Invalid parameters" = "Invalid parameters";
+
+/* (No Comment) */
+"Invalid handle" = "Invalid handle";
+
+/* (No Comment) */
+"Not connected" = "Not connected";
+
+/* (No Comment) */
+"Out of space" = "Out of space";
+
+/* (No Comment) */
+"Operation cancelled" = "Operation cancelled";
+
+/* (No Comment) */
+"Connection timeout" = "Connection timeout";
+
+/* (No Comment) */
+"Peripheral disconnected" = "Peripheral disconnected";
+
+/* (No Comment) */
+"UUID not allowed" = "UUID not allowed";
+
+/* (No Comment) */
+"Already advertising" = "Already advertising";
+
+/* (No Comment) */
+"Connection failed" = "Connection failed";
+
+/* (No Comment) */
+"Connection limit reached" = "Connection limit reached";
+
+/* (No Comment) */
+"Operation not supported" = "Operation not supported";
+
+/* (No Comment) */
+"Attention, the sensor sends faulty values. Please wait 10 minutes." = "Attention, the sensor sends faulty values. Please wait 10 minutes.";

@@ -13,6 +13,22 @@ struct GlucoseListView: View {
     @State var glucoseValues: [Glucose] = []
 
     @EnvironmentObject var store: AppStore
+    
+    private func isPrecise(glucose: Glucose) -> Bool {
+        if glucose.type == .none {
+            return false
+        }
+        
+        if store.state.glucoseUnit == .mgdL || glucose.type == .bgm {
+            return false
+        }
+        
+        guard let glucoseValue = glucose.glucoseValue else {
+            return false
+        }
+        
+        return glucoseValue.isAlmost(store.state.alarmLow, store.state.alarmHigh)
+    }
 
     var body: some View {
         VStack {
@@ -73,10 +89,15 @@ struct GlucoseListView: View {
                                         .foregroundColor(Color.ui.red)
                                 }
 
-                                Text(glucose.glucoseValue.asGlucose(unit: store.state.glucoseUnit, withUnit: true))
-                                    .if(glucose.glucoseValue < store.state.alarmLow || glucose.glucoseValue > store.state.alarmHigh) { text in
-                                        text.foregroundColor(Color.ui.red)
-                                    }
+                                if let glucoseValue = glucose.glucoseValue {
+                                    Text(glucoseValue.asGlucose(unit: store.state.glucoseUnit, withUnit: true, precise: isPrecise(glucose: glucose)))
+                                        .if(glucoseValue < store.state.alarmLow || glucoseValue > store.state.alarmHigh) { text in
+                                            text.foregroundColor(Color.ui.red)
+                                        }
+                                } else {
+                                    Image(systemName: "exclamationmark.triangle")
+                                        .foregroundColor(Color.ui.red)
+                                }
                             }
                         }.onDelete { offsets in
                             Log.info("onDelete: \(offsets)")
