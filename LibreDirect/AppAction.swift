@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import OSLog
 
 enum AppAction {
     case addCalibration(glucoseValue: Int)
@@ -31,6 +32,9 @@ enum AppAction {
     case selectConnection(id: String, connection: SensorConnection)
     case selectConnectionId(id: String)
     case selectView(viewTag: Int)
+    
+    case deleteLogs
+    case sendLogs
     
     case setAlarmHigh(upperLimit: Int)
     case setAlarmLow(lowerLimit: Int)

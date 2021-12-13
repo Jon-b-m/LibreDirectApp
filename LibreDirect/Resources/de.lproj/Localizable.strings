@@ -56,6 +56,9 @@
 "Are you sure you want to delete all calibrations?" = "Sind Sie sicher, dass Sie alle Kalibrierungen löschen wollen?";
 
 /* (No Comment) */
+"Are you sure you want to delete all log files?" = "Sind Sie sicher, dass Sie alle Protokolldateien löschen wollen?";
+
+/* (No Comment) */
 "Are you sure you want to delete all glucose values?" = "Sind Sie sicher, dass Sie alle Glukosewerte löschen wollen?";
 
 /* (No Comment) */
@@ -464,4 +467,13 @@
 "Attention, the sensor sends faulty values. Please wait 10 minutes." = "Achtung, der Sensor sendet fehlerhafte Werte. Bitte warten Sie 10 Minuten.";
 
 /* (No Comment) */
-"App Website" = "Website";
+"App Website" = "Webseite";
+
+/* (No Comment) */
+"Send log file" = "Protokolldatei senden";
+
+/* (No Comment) */
+"Sensor starting date" = "Startdatum";
+
+/* (No Comment) */
+"Delete log files" = "Protokolldateien löschen";

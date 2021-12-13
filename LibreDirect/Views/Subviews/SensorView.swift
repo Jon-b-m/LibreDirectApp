@@ -152,17 +152,17 @@ struct SensorView: View {
                 Section(
                     content: {
                         HStack {
-                            Text("Sensor region")
-                            Spacer()
-                            Text(sensor.region.localizedString).textSelection(.enabled)
-                        }
-
-                        HStack {
                             Text("Sensor type")
                             Spacer()
                             Text(sensor.type.localizedString).textSelection(.enabled)
                         }
 
+                        HStack {
+                            Text("Sensor region")
+                            Spacer()
+                            Text(sensor.region.localizedString).textSelection(.enabled)
+                        }
+                        
                         HStack {
                             Text("Sensor UID")
                             Spacer()
@@ -194,6 +194,14 @@ struct SensorView: View {
                             Text("Sensor state")
                             Spacer()
                             Text(sensor.state.localizedString).textSelection(.enabled)
+                        }
+
+                        if let startTimestamp = sensor.startTimestamp {
+                            HStack {
+                                Text("Sensor starting date")
+                                Spacer()
+                                Text(startTimestamp.localDateTime)
+                            }
                         }
 
                         if let remainingWarmupTime = sensor.remainingWarmupTime, sensor.state == .starting {
@@ -285,7 +293,7 @@ struct SensorView: View {
             }
         }.onChange(of: colorScheme) { scheme in
             if deviceColorScheme != scheme {
-                Log.info("onChange colorScheme: \(scheme)")
+                AppLog.info("onChange colorScheme: \(scheme)")
 
                 deviceColorScheme = scheme
             }
