@@ -24,20 +24,19 @@ func appReducer(state: inout AppState, action: AppAction) {
         state.sensor!.customCalibration.append(CustomCalibration(x: Double(factoryCalibratedGlucoseValue), y: Double(glucoseValue)))
         
     case .addGlucose(glucose: let glucose):
+        var glucoseValues = state.glucoseValues.suffix(min(AppConfig.NumberOfGlucoseValues - 1, state.glucoseValues.count))
+        glucoseValues.append(glucose)
+        
         state.missedReadings = 0
-        state.glucoseValues.append(glucose)
+        state.glucoseValues = [Glucose](glucoseValues)
 
-        let toMany = state.glucoseValues.count - AppConfig.NumberOfGlucoseValues
-        if toMany > 0 {
-            for _ in 1 ... toMany {
-                state.glucoseValues.removeFirst()
-            }
-        }
-
-    case .addGlucoseValues(glucoseValues: let glucoseValues):
-        if !glucoseValues.isEmpty {
+    case .addGlucoseValues(glucoseValues: let addedGlucoseValues):
+        if !addedGlucoseValues.isEmpty {
+            var glucoseValues = state.glucoseValues.suffix(min(AppConfig.NumberOfGlucoseValues - addedGlucoseValues.count, state.glucoseValues.count))
+            glucoseValues.append(contentsOf: glucoseValues)
+            
             state.missedReadings = 0
-            state.glucoseValues.append(contentsOf: glucoseValues)
+            state.glucoseValues = [Glucose](glucoseValues)
         }
         
     case .addMissedReading:
@@ -166,8 +165,8 @@ func appReducer(state: inout AppState, action: AppAction) {
     case .setGlucoseUnit(unit: let unit):
         state.glucoseUnit = unit
         
-    case .setNightscoutHost(host: let host):
-        state.nightscoutHost = host
+    case .setNightscoutUrl(url: let url):
+        state.nightscoutUrl = url
 
     case .setNightscoutSecret(apiSecret: let apiSecret):
         state.nightscoutApiSecret = apiSecret
@@ -198,6 +197,7 @@ func appReducer(state: inout AppState, action: AppAction) {
         
     case .startup:
         break
+
     }
 
     if let alarmSnoozeUntil = state.alarmSnoozeUntil, Date() > alarmSnoozeUntil {
