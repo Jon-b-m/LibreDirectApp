@@ -7,4 +7,4 @@ PRODUCT_BUNDLE_IDENTIFIER = JBM.${DEVELOPMENT_TEAM}.libre-direct
 APP_GROUP_ID = group.com.$(DEVELOPMENT_TEAM).aps.JBMgroup
 DEVELOPMENT_TEAM = T7VZ6LU6H3
 
-// #include "../AppConfigOverride.xcconfig"
+#include? "../AppConfigOverride.xcconfig"
