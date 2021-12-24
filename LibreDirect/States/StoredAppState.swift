@@ -30,22 +30,12 @@ struct StoredAppState: AppState {
         self.nightscoutApiSecret = UserDefaults.standard.nightscoutApiSecret
         self.nightscoutUrl = UserDefaults.standard.nightscoutUrl
         self.nightscoutUpload = UserDefaults.standard.nightscoutUpload
+        self.readGlucose = UserDefaults.standard.readGlucose
         self.selectedCalendarTarget = UserDefaults.standard.selectedCalendarTarget
         self.selectedConnectionId = UserDefaults.standard.selectedConnectionId ?? "libre2"
         self.selectedView = UserDefaults.standard.selectedView
         self.sensor = UserDefaults.standard.sensor
         self.transmitter = UserDefaults.standard.transmitter
-
-        let oldGlucoseValues = getOldGlucoseKeys()
-        if glucoseValues.isEmpty && !oldGlucoseValues.isEmpty {
-            oldGlucoseValues.forEach { key in
-                if let glucose = getGlucoseForKey(key: key) {
-                    glucoseValues.append(glucose)
-                }
-                
-                UserDefaults.standard.removeObject(forKey: key)
-            }
-        }
     }
 
     // MARK: Internal
@@ -138,6 +128,12 @@ struct StoredAppState: AppState {
         }
     }
 
+    var readGlucose: Bool {
+        didSet {
+            UserDefaults.standard.readGlucose = readGlucose
+        }
+    }
+
     var selectedCalendarTarget: String? {
         didSet {
             UserDefaults.standard.selectedCalendarTarget = selectedCalendarTarget
@@ -166,16 +162,5 @@ struct StoredAppState: AppState {
         didSet {
             UserDefaults.standard.transmitter = transmitter
         }
-    }
-    
-    func getOldGlucoseKeys() -> [String] {
-        return UserDefaults.standard.dictionaryRepresentation().keys.filter {
-            $0.starts(with: "gv-")
-        }.sorted()
-    }
-    
-    func getGlucoseForKey(key: String) -> Glucose? {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
-        return try? JSONDecoder().decode(Glucose.self, from: data)
     }
 }

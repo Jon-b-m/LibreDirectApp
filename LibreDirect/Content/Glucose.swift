@@ -77,13 +77,14 @@ final class Glucose: CustomStringConvertible, Codable, Identifiable {
 
     var glucoseValue: Int? {
         guard let calibratedGlucoseValue = calibratedGlucoseValue else {
+            AppLog.info("Guard: calibratedGlucoseValue is nil")
             return nil
         }
         
-        if calibratedGlucoseValue < AppConfig.MinReadableGlucose {
-            return AppConfig.MinReadableGlucose
-        } else if calibratedGlucoseValue > AppConfig.MaxReadableGlucose {
-            return AppConfig.MaxReadableGlucose
+        if calibratedGlucoseValue < AppConfig.minReadableGlucose {
+            return AppConfig.minReadableGlucose
+        } else if calibratedGlucoseValue > AppConfig.maxReadableGlucose {
+            return AppConfig.maxReadableGlucose
         }
 
         return calibratedGlucoseValue
@@ -108,5 +109,17 @@ extension Glucose {
         let minutes = Calendar.current.component(.minute, from: timestamp)
 
         return minutes % 5 == 0
+    }
+    
+    var is10Minutely: Bool {
+        let minutes = Calendar.current.component(.minute, from: timestamp)
+
+        return minutes % 10 == 0
+    }
+    
+    var is15Minutely: Bool {
+        let minutes = Calendar.current.component(.minute, from: timestamp)
+
+        return minutes % 15 == 0
     }
 }

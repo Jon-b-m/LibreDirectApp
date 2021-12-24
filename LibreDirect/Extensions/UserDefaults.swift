@@ -22,6 +22,7 @@ private enum Keys: String {
     case nightscoutApiSecret = "libre-direct.settings.nightscout-api-secret"
     case nightscoutUrl = "libre-direct.settings.nightscout-host"
     case nightscoutUpload = "libre-direct.settings.nightscout-upload-enabled"
+    case readGlucose = "libre-direct.settings.read-glucose"
     case selectedCalendarTarget = "libre-direct.settings.selected-calendar-target"
     case selectedConnectionId = "libre-direct.settings.selected-connection-id"
     case selectedView = "libre-direct.settings.selected-view"
@@ -215,6 +216,19 @@ extension UserDefaults {
             set(newValue, forKey: Keys.nightscoutUpload.rawValue)
         }
     }
+    
+    var readGlucose: Bool {
+        get {
+            if object(forKey: Keys.readGlucose.rawValue) != nil {
+                return bool(forKey: Keys.readGlucose.rawValue)
+            }
+
+            return false
+        }
+        set {
+            set(newValue, forKey: Keys.readGlucose.rawValue)
+        }
+    }
 
     var selectedCalendarTarget: String? {
         get {
@@ -291,7 +305,10 @@ extension UserDefaults {
     }
 
     func getArray<Element>(forKey key: String) -> [Element]? where Element: Decodable {
-        guard let data = data(forKey: key) else { return nil }
+        guard let data = data(forKey: key) else {
+            return nil
+        }
+        
         return try? JSONDecoder().decode([Element].self, from: data)
     }
 
@@ -301,15 +318,18 @@ extension UserDefaults {
     }
 
     func getObject<Element>(forKey key: String) -> Element? where Element: Decodable {
-        guard let data = data(forKey: key) else { return nil }
+        guard let data = data(forKey: key) else {
+            return nil
+        }
+        
         return try? JSONDecoder().decode(Element.self, from: data)
     }
 
     static func stringValue(forKey key: String) -> String {
-        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String
-        else {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             fatalError("Invalid value or undefined key")
         }
+        
         return value
     }
 }

@@ -422,7 +422,7 @@
 "About %@" = "Über %@";
 
 /* (No Comment) */
-"App Version" = "Version";
+"App version" = "Version";
 
 /* (No Comment) */
 "Unknown" = "Unbekannt";
@@ -467,7 +467,7 @@
 "Attention, the sensor sends faulty values. Please wait 10 minutes." = "Achtung, der Sensor sendet fehlerhafte Werte. Bitte warten Sie 10 Minuten.";
 
 /* (No Comment) */
-"App Website" = "Webseite";
+"App website" = "Webseite";
 
 /* (No Comment) */
 "Send log file" = "Fehlerbericht senden";
@@ -477,3 +477,60 @@
 
 /* (No Comment) */
 "Delete log files" = "Fehlerberichte löschen";
+
+/* (No Comment) */
+"Readable glucose: %1$@ %2$@" = "Glukose: %1$@ %2$@";
+
+/* (No Comment) */
+"Readable glucose with trend: %1$@ %2$@, %3$@" = "Glukose: %1$@ %2$@, %3$@";
+
+/* (No Comment) */
+"Readable low glucose: %1$@ %2$@" = "Glukose: %1$@ %2$@. Achtung, Unterzuckerung!";
+
+/* (No Comment) */
+"Readable high glucose: %1$@ %2$@" = "Glukose: %1$@ %2$@. Achtung, Überzuckerung!";
+
+/* (No Comment) */
+"Readable miligram" = "miligram";
+
+/* (No Comment) */
+"Readable milimol" = "milimol";
+
+/* (No Comment) */
+"Readable falling" = "fallend";
+
+/* (No Comment) */
+"Readable fast falling" = "schnell fallend";
+
+/* (No Comment) */
+"Readable rapidly falling" = "rapide fallend";
+
+/* (No Comment) */
+"Readable rising" = "steigend";
+
+/* (No Comment) */
+"Readable fast rising" = "schnell steigend";
+
+/* (No Comment) */
+"Readable rapidly rising" = "rapide steigend";
+
+/* (No Comment) */
+"Read aloud" = "Laut vorlesen";
+
+/* (No Comment) */
+"Glucose read aloud" = "Glukose vorlesen";
+
+/* (No Comment) */
+"Glucose values are read aloud:" = "Die Glukosewerte werden vorgelesen:";
+
+/* (No Comment) */
+"Every 10 minutes" = "- Alle 10 Minuten";
+
+/* (No Comment) */
+"After disconnections" = "- Nach Verbindungsabbrüchen";
+
+/* (No Comment) */
+"When the glucose trend changes" = "- Wenn sich der Glukosetrend ändert";
+
+/* (No Comment) */
+"When a new alarm is triggered" = "- Wenn ein neuer Alarm ausgelöst wird";

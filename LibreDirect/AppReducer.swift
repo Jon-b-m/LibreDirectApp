@@ -14,10 +14,12 @@ func appReducer(state: inout AppState, action: AppAction) {
     switch action {
     case .addCalibration(glucoseValue: let glucoseValue):
         guard state.sensor != nil else {
+            AppLog.info("Guard: state.sensor is nil")
             break
         }
         
         guard let factoryCalibratedGlucoseValue = state.currentGlucose?.initialGlucoseValue else {
+            AppLog.info("Guard: state.currentGlucose.initialGlucoseValue is nil")
             break
         }
         
@@ -27,7 +29,7 @@ func appReducer(state: inout AppState, action: AppAction) {
         if !addedGlucoseValues.isEmpty {
             var glucoseValues = state.glucoseValues + addedGlucoseValues
             
-            let overLimit = glucoseValues.count - AppConfig.NumberOfGlucoseValues
+            let overLimit = glucoseValues.count - AppConfig.numberOfGlucoseValues
             if overLimit > 0 {
                 glucoseValues = Array(glucoseValues.dropFirst(overLimit))
             }
@@ -44,6 +46,7 @@ func appReducer(state: inout AppState, action: AppAction) {
         
     case .clearCalibrations:
         guard state.sensor != nil else {
+            AppLog.info("Guard: state.sensor is nil")
             break
         }
         
@@ -66,6 +69,7 @@ func appReducer(state: inout AppState, action: AppAction) {
         
     case .removeCalibration(id: let id):
         guard state.sensor != nil else {
+            AppLog.info("Guard: state.sensor is nil")
             break
         }
         
@@ -123,12 +127,9 @@ func appReducer(state: inout AppState, action: AppAction) {
     case .setCalendarExport(enabled: let enabled):
         state.calendarExport = enabled
         
-    case .setAlarmSnoozeUntil(untilDate: let untilDate):
+    case .setAlarmSnoozeUntil(untilDate: let untilDate, autosnooze: _):
         if let untilDate = untilDate {
             state.alarmSnoozeUntil = untilDate
-            
-            // stop sounds
-            NotificationService.shared.stopSound()
         } else {
             state.alarmSnoozeUntil = nil
         }
@@ -174,11 +175,15 @@ func appReducer(state: inout AppState, action: AppAction) {
     case .setNightscoutUpload(enabled: let enabled):
         state.nightscoutUpload = enabled
         
+    case .setReadGlucose(enabled: let enabled):
+        state.readGlucose = enabled
+        
     case .setSensor(sensor: let sensor):
         state.sensor = sensor
 
     case .setSensorState(sensorAge: let sensorAge, sensorState: let sensorState):
         guard state.sensor != nil else {
+            AppLog.info("Guard: state.sensor is nil")
             break
         }
         

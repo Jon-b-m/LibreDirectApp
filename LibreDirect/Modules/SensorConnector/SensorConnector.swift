@@ -7,7 +7,9 @@ import Combine
 import Foundation
 
 func sensorConnectorMiddelware(_ infos: [SensorConnectionInfo]) -> Middleware<AppState, AppAction> {
-    return sensorConnectorMiddelware(infos, subject: PassthroughSubject<AppAction, AppError>(), calibrationService: CalibrationService())
+    return sensorConnectorMiddelware(infos, subject: PassthroughSubject<AppAction, AppError>(), calibrationService: {
+        CalibrationService()
+    }())
 }
 
 private func sensorConnectorMiddelware(_ infos: [SensorConnectionInfo], subject: PassthroughSubject<AppAction, AppError>, calibrationService: CalibrationService) -> Middleware<AppState, AppAction> {
@@ -99,8 +101,6 @@ private func sensorConnectorMiddelware(_ infos: [SensorConnectionInfo], subject:
                     }
                 }
 
-                AppLog.info("develop: \(missedGlucosValues)")
-
                 return Just(.addGlucoseValues(glucoseValues: missedGlucosValues))
                     .setFailureType(to: AppError.self)
                     .eraseToAnyPublisher()
@@ -108,6 +108,7 @@ private func sensorConnectorMiddelware(_ infos: [SensorConnectionInfo], subject:
 
         case .pairSensor:
             guard let sensorConnection = state.selectedConnection else {
+                AppLog.info("Guard: state.selectedConnection is nil")
                 break
             }
 
@@ -115,6 +116,7 @@ private func sensorConnectorMiddelware(_ infos: [SensorConnectionInfo], subject:
 
         case .connectSensor:
             guard let sensorConnection = state.selectedConnection else {
+                AppLog.info("Guard: state.selectedConnection is nil")
                 break
             }
 
@@ -126,6 +128,7 @@ private func sensorConnectorMiddelware(_ infos: [SensorConnectionInfo], subject:
 
         case .disconnectSensor:
             guard let sensorConnection = state.selectedConnection else {
+                AppLog.info("Guard: state.selectedConnection is nil")
                 break
             }
 

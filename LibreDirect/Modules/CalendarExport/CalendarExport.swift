@@ -8,7 +8,9 @@ import EventKit
 import Foundation
 
 func calendarExportMiddleware() -> Middleware<AppState, AppAction> {
-    return calendarExportMiddleware(service: CalendarExportService())
+    return calendarExportMiddleware(service: {
+        CalendarExportService()
+    }())
 }
 
 func calendarExportMiddleware(service: CalendarExportService) -> Middleware<AppState, AppAction> {
@@ -34,11 +36,23 @@ func calendarExportMiddleware(service: CalendarExportService) -> Middleware<AppS
             }
 
         case .addGlucoseValues(glucoseValues: let glucoseValues):
-            guard let glucose = glucoseValues.last else {
+            guard state.calendarExport else {
+                AppLog.info("Guard: state.calendarExport disabled")
                 break
             }
             
-            guard state.calendarExport, let calendarTarget = state.selectedCalendarTarget, glucose.type == .cgm else {
+            guard let glucose = glucoseValues.last else {
+                AppLog.info("Guard: glucoseValues.last is nil")
+                break
+            }
+            
+            guard glucose.type == .cgm else {
+                AppLog.info("Guard: glucose.type is not .cgm")
+                break
+            }
+
+            guard let calendarTarget = state.selectedCalendarTarget else {
+                AppLog.info("Guard: state.selectedCalendarTarget is nil")
                 break
             }
 
@@ -89,7 +103,7 @@ class CalendarExportService {
         let events = eventStore.events(matching: predicate)
 
         for event in events {
-            if event.url == AppConfig.AppSchemaUrl {
+            if event.url == AppConfig.appSchemaUrl {
                 do {
                     try eventStore.remove(event, span: .thisEvent)
                 } catch {
@@ -117,7 +131,7 @@ class CalendarExportService {
         let event = EKEvent(eventStore: eventStore)
         event.title = "\(glucose.trend.description) \(glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true)) (\(glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? ""))"
         event.calendar = calendar
-        event.url = AppConfig.AppSchemaUrl
+        event.url = AppConfig.appSchemaUrl
         event.startDate = Date()
         event.endDate = Date(timeIntervalSinceNow: 60 * 10)
 

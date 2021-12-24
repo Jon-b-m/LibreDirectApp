@@ -7,7 +7,9 @@ import Combine
 import Foundation
 
 func appGroupSharingMiddleware() -> Middleware<AppState, AppAction> {
-    return appGroupSharingMiddleware(service: AppGroupSharingService())
+    return appGroupSharingMiddleware(service: {
+        AppGroupSharingService()
+    }())
 }
 
 private func appGroupSharingMiddleware(service: AppGroupSharingService) -> Middleware<AppState, AppAction> {
@@ -21,6 +23,7 @@ private func appGroupSharingMiddleware(service: AppGroupSharingService) -> Middl
 
         case .addGlucoseValues(glucoseValues: let glucoseValues):
             guard let glucose = glucoseValues.last else {
+                AppLog.info("Guard: glucoseValues.last is nil")
                 break
             }
 

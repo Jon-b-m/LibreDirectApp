@@ -31,6 +31,14 @@ App programmed in Swift/SwiftUI for using Libre 1/2 blood glucose sensors. I try
 - Sensor expiring alert
 - Snooze for glucose alerts
 
+## Available languages
+- English
+- German
+- Swedish
+- Chinese (simplified and traditional)
+- Spanish
+- Italian
+
 ## Requirements
 - Apple iPhone with iOS 15
 
@@ -45,12 +53,14 @@ I am very happy to receive feedback - suggestions for improvement or reports of 
 
 ## Many thanks goes to
 - **Richard** for the design of the app icon
-- **Jon-b-m** for your translation into Swedish
-- **birdfly** for your translation into Chinese
+- **Jon-b-m** and **bubblan** for your translation into Swedish
+- **birdfly** for your translation into Chinese (simplified and traditional)
+- **Timmy_otoole** for your translation into Spanish
+- **goldshotter** for your translation into Italian
 - **All** who contribute to the app with their ideas
 
 ## Todo
-- Read out blood glucose values
+- Read out blood glucose values (**in progress**)
 - Cache Nightscout uploads without an Internet connection and run them later
 - Connect to Apple Health
 - Transmitter battery notifications

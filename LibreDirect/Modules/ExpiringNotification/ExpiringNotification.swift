@@ -8,7 +8,9 @@ import Foundation
 import UserNotifications
 
 func expiringNotificationMiddelware() -> Middleware<AppState, AppAction> {
-    return expiringNotificationMiddelware(service: ExpiringNotificationService())
+    return expiringNotificationMiddelware(service: {
+        ExpiringNotificationService()
+    }())
 }
 
 private func expiringNotificationMiddelware(service: ExpiringNotificationService) -> Middleware<AppState, AppAction> {
@@ -21,10 +23,12 @@ private func expiringNotificationMiddelware(service: ExpiringNotificationService
 
         case .setSensorState(sensorAge: let sensorAge, sensorState: _):
             guard state.expiringAlarm else {
+                AppLog.info("Guard: expiringAlarm disabled")
                 break
             }
 
             guard let sensor = state.sensor else {
+                AppLog.info("Guard: state.sensor is nil")
                 break
             }
 
@@ -32,12 +36,12 @@ private func expiringNotificationMiddelware(service: ExpiringNotificationService
 
             let remainingMinutes = max(0, sensor.lifetime - sensorAge)
             if remainingMinutes == 0 { // expired
-                AppLog.info("Sensor expired alert!")
+                AppLog.info("Sensor is expired")
 
                 service.setSensorExpiredAlarm()
 
             } else if remainingMinutes <= (8 * 60 + 1) { // less than 8 hours
-                AppLog.info("Sensor expiring alert, less than 8 hours")
+                AppLog.info("Sensor is expiring in less than 8 hours")
 
                 if remainingMinutes.inHours == 0 {
                     service.setSensorExpiringAlarm(body: String(format: LocalizedString("Your sensor is about to expire. Replace sensor in %1$@ minutes.", comment: ""), remainingMinutes.inMinutes.description), withSound: true)
@@ -46,7 +50,7 @@ private func expiringNotificationMiddelware(service: ExpiringNotificationService
                 }
 
             } else if remainingMinutes <= (24 * 60 + 1) { // less than 24 hours
-                AppLog.info("Sensor expiring alert check, less than 24 hours")
+                AppLog.info("Sensor is expiring in less than 24 hours")
 
                 service.setSensorExpiringAlarm(body: String(format: LocalizedString("Your sensor is about to expire. Replace sensor in %1$@ hours.", comment: ""), remainingMinutes.inHours.description))
             }
@@ -80,7 +84,7 @@ private class ExpiringNotificationService {
             return
         }
 
-        nextExpiredAlert = Date().addingTimeInterval(AppConfig.ExpiredNotificationInterval)
+        nextExpiredAlert = Date().addingTimeInterval(AppConfig.expiredNotificationInterval)
 
         NotificationService.shared.ensureCanSendNotification { state in
             AppLog.info("Sensor expired alert, state: \(state)")
@@ -90,7 +94,7 @@ private class ExpiringNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = .none
+            notification.sound = NotificationService.SilentSound
 
             if #available(iOS 15.0, *) {
                 notification.interruptionLevel = .critical
@@ -119,7 +123,7 @@ private class ExpiringNotificationService {
         }
 
         lastExpiringAlert = body
-        nextExpiredAlert = Date().addingTimeInterval(AppConfig.ExpiredNotificationInterval)
+        nextExpiredAlert = Date().addingTimeInterval(AppConfig.expiredNotificationInterval)
 
         NotificationService.shared.ensureCanSendNotification { state in
             AppLog.info("Sensor expired alert, state: \(state)")
@@ -129,7 +133,7 @@ private class ExpiringNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = .none
+            notification.sound = NotificationService.SilentSound
 
             if withSound {
                 if #available(iOS 15.0, *) {
