@@ -479,58 +479,64 @@
 "Delete log files" = "Ta bort loggfiler";
 
 /* (No Comment) */
-"Readable glucose: %1$@ %2$@" = "Glucose: %1$@ %2$@";
+"Readable glucose: %1$@ %2$@" = "Glukos: %1$@ %2$@";
 
 /* (No Comment) */
-"Readable glucose with trend: %1$@ %2$@, %3$@" = "Glucose: %1$@ %2$@, %3$@";
+"Readable glucose with trend: %1$@ %2$@, %3$@" = "Glukos: %1$@ %2$@, %3$@";
 
 /* (No Comment) */
-"Readable low glucose: %1$@ %2$@" = "Glucose: %1$@ %2$@. Attention, Hypoglycemia!";
+"Readable low glucose: %1$@ %2$@" = "Glukos: %1$@ %2$@. Varning, Lågt blodsocker!";
 
 /* (No Comment) */
-"Readable high glucose: %1$@ %2$@" = "Glucose: %1$@ %2$@. Attention, Hyperglycemia!";
+"Readable high glucose: %1$@ %2$@" = "Glukos: %1$@ %2$@. Varning, Högt blodsocker!";
 
 /* (No Comment) */
-"Readable miligram" = "miligram";
+"Readable miligram" = "milligram";
 
 /* (No Comment) */
-"Readable milimol" = "milimol";
+"Readable milimol" = "millimol";
 
 /* (No Comment) */
-"Readable falling" = "falling";
+"Readable falling" = "sjunkande";
 
 /* (No Comment) */
-"Readable fast falling" = "fast falling";
+"Readable fast falling" = "snabbt sjunkande";
 
 /* (No Comment) */
-"Readable rapidly falling" = "rapidly falling";
+"Readable rapidly falling" = "hastigt sjunkande";
 
 /* (No Comment) */
-"Readable rising" = "rising";
+"Readable rising" = "stigande";
 
 /* (No Comment) */
-"Readable fast rising" = "fast rising";
+"Readable fast rising" = "snabbt stigande";
 
 /* (No Comment) */
-"Readable rapidly rising" = "rapidly rising";
+"Readable rapidly rising" = "hastigt stigande";
 
 /* (No Comment) */
-"Read aloud" = "Read aloud";
+"Read aloud" = "Läs upp";
 
 /* (No Comment) */
-"Glucose read aloud" = "Glucose read aloud";
+"Glucose read aloud" = "Glukos läses upp";
 
 /* (No Comment) */
-"Glucose values are read aloud:" = "Glucose values are read aloud:";
+"Glucose values are read aloud:" = "Glukosvärden läses upp:";
 
 /* (No Comment) */
-"Every 10 minutes" = "- Every 10 minutes";
+"Every 10 minutes" = "Var 10: e minut";
 
 /* (No Comment) */
-"After disconnections" = "- After disconnections";
+"After disconnections" = "- Efter frånkopplingar";
 
 /* (No Comment) */
-"When the glucose trend changes" = "- When the glucose trend changes";
+"When the glucose trend changes" = "- När glukostrend förändras";
 
 /* (No Comment) */
-"When a new alarm is triggered" = "- When a new alarm is triggered";
+"When a new alarm is triggered" = "- När ett nytt larm utlöses";
+
+/* (No Comment) */
+"App author" = "Author";
+
+/* (No Comment) */
+"App support mail" = "Support";

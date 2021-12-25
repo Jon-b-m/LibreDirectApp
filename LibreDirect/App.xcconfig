@@ -3,8 +3,9 @@
 //  LibreDirect
 //
 
-PRODUCT_BUNDLE_IDENTIFIER = JBM.${DEVELOPMENT_TEAM}.libre-direct
-APP_GROUP_ID = group.com.$(DEVELOPMENT_TEAM).aps.JBMgroup
+APP_VERSION = 0.6
 DEVELOPMENT_TEAM = T7VZ6LU6H3
+APP_GROUP_ID = group.com.$(DEVELOPMENT_TEAM).aps.JBMgroup
+PRODUCT_BUNDLE_IDENTIFIER = JBM.${DEVELOPMENT_TEAM}.libre-direct
 
 #include? "../AppConfigOverride.xcconfig"
