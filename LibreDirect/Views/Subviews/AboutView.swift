@@ -21,14 +21,6 @@ struct AboutView: View {
                     Text(AppConfig.appVersion)
                 }
                 
-                HStack {
-                    Text("App website")
-                    Spacer()
-                    Link("GitHub", destination: URL(string: AppConfig.repoUrl)!)
-                        .lineLimit(1)
-                        .truncationMode(.head)
-                }
-                
                 if let appAuthor = AppConfig.appAuthor, !appAuthor.isEmpty {
                     HStack {
                         Text("App author")
@@ -37,6 +29,15 @@ struct AboutView: View {
                     }
                 }
                 
+                
+                HStack {
+                    Text("App website")
+                    Spacer()
+                    Link("GitHub", destination: URL(string: AppConfig.githubUrl)!)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                }
+
                 if let appSupportMail = AppConfig.appSupportMail, !appSupportMail.isEmpty {
                     HStack {
                         Text("App support mail")
@@ -45,6 +46,14 @@ struct AboutView: View {
                             .lineLimit(1)
                             .truncationMode(.head)
                     }
+                }
+                
+                HStack {
+                    Text("App translation")
+                    Spacer()
+                    Link("Crowdin", destination: URL(string: AppConfig.crowdinUrl)!)
+                        .lineLimit(1)
+                        .truncationMode(.head)
                 }
 
                 Button(
