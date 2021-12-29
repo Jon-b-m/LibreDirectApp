@@ -20,7 +20,7 @@ struct AboutView: View {
                     Spacer()
                     Text(AppConfig.appVersion)
                 }
-                
+
                 if let appAuthor = AppConfig.appAuthor, !appAuthor.isEmpty {
                     HStack {
                         Text("App author")
@@ -29,7 +29,16 @@ struct AboutView: View {
                     }
                 }
                 
-                
+                if let appSupportMail = AppConfig.appSupportMail, !appSupportMail.isEmpty {
+                    HStack {
+                        Text("App email")
+                        Spacer()
+                        Link(appSupportMail, destination: URL(string: "mailto:\(appSupportMail)")!)
+                            .lineLimit(1)
+                            .truncationMode(.head)
+                    }
+                }
+
                 HStack {
                     Text("App website")
                     Spacer()
@@ -37,17 +46,23 @@ struct AboutView: View {
                         .lineLimit(1)
                         .truncationMode(.head)
                 }
-
-                if let appSupportMail = AppConfig.appSupportMail, !appSupportMail.isEmpty {
-                    HStack {
-                        Text("App support mail")
-                        Spacer()
-                        Link(appSupportMail, destination: URL(string: "mailto:\(appSupportMail)")!)
-                            .lineLimit(1)
-                            .truncationMode(.head)
-                    }
+                
+                HStack {
+                    Text("App faq")
+                    Spacer()
+                    Link("GitHub", destination: URL(string: AppConfig.faqUrl)!)
+                        .lineLimit(1)
+                        .truncationMode(.head)
                 }
                 
+                HStack {
+                    Text("App facebook group")
+                    Spacer()
+                    Link("Facebook", destination: URL(string: AppConfig.facebookUrl)!)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                }
+
                 HStack {
                     Text("App translation")
                     Spacer()
