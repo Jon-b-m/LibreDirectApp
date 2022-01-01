@@ -73,9 +73,7 @@ struct ChartView: View {
     @State var deviceColorScheme = ColorScheme.light
     @State var cgmValues: [Glucose] = []
     @State var bgmValues: [Glucose] = []
-
-    @State var zoomMinutes = 1
-    @State var zoomGridStep = Config.zoomGridStep[1]!
+    @State var zoomGridStep = Config.zoomGridStep[Config.zoomLevels.first!.level]!
 
     var chartView: some View {
         GeometryReader { geo in
@@ -148,7 +146,10 @@ struct ChartView: View {
                 updateCgmPath(fullSize: geo.size, glucoseValues: cgmValues)
                 updateBgmPath(fullSize: geo.size, glucoseValues: bgmValues)
             }
-            .onChange(of: zoomMinutes) { _ in
+            .onChange(of: store.state.chartZoomLevel) { zoomLevel in
+                AppLog.info("onChange zoomLevel: \(zoomLevel)")
+
+                updateZoomLevel(level: zoomLevel)
                 updateGlucoseValues()
                 updateHelpVariables(fullSize: geo.size, glucoseValues: store.state.glucoseValues)
 
@@ -165,6 +166,7 @@ struct ChartView: View {
             .onAppear {
                 AppLog.info("onAppear")
 
+                updateZoomLevel(level: store.state.chartZoomLevel)
                 updateGlucoseValues()
                 updateHelpVariables(fullSize: geo.size, glucoseValues: store.state.glucoseValues)
 
@@ -193,28 +195,47 @@ struct ChartView: View {
                         .frame(height: Config.height)
 
                     HStack {
-                        ForEach(Config.zoomLevels, id: \.minutes) { zoom in
-                            Spacer()
+                        ForEach(Config.zoomLevels, id: \.level) { zoom in
                             Button(
                                 action: {
-                                    zoomMinutes = zoom.minutes
-                                    zoomGridStep = Config.zoomGridStep[zoom.minutes]!
+                                    store.dispatch(.setChartZoomLevel(level: zoom.level))
                                 },
                                 label: {
                                     Circle()
-                                        .if(zoomMinutes == zoom.minutes) {
+                                        .if(store.state.chartZoomLevel == zoom.level) {
                                             $0.fill(Config.y.textColor)
                                         } else: {
                                             $0.stroke(Config.y.textColor)
                                         }
-                                        .frame(width: 9, height: 9)
+                                        .frame(width: 12, height: 12)
 
                                     Text(zoom.title)
+                                        .font(.subheadline)
                                         .foregroundColor(Config.y.textColor)
                                 }
                             ).buttonStyle(.plain)
+
+                            Spacer()
                         }
-                        Spacer()
+
+                        Button(
+                            action: {
+                                store.dispatch(.setChartShowLines(enabled: !store.state.chartShowLines))
+                            },
+                            label: {
+                                Rectangle()
+                                    .if(store.state.chartShowLines) {
+                                        $0.fill(Config.y.textColor)
+                                    } else: {
+                                        $0.stroke(Config.y.textColor)
+                                    }
+                                    .frame(width: 12, height: 12)
+
+                                Text("Line")
+                                    .font(.subheadline)
+                                    .foregroundColor(Config.y.textColor)
+                            }
+                        ).buttonStyle(.plain)
                     }
                 },
                 header: {
@@ -250,7 +271,7 @@ struct ChartView: View {
                 .onChange(of: bgmValues) { _ in
                     scroll.scrollTo(Config.endID, anchor: .trailing)
                 }
-                .onChange(of: zoomMinutes) { _ in
+                .onChange(of: store.state.chartZoomLevel) { _ in
                     scroll.scrollTo(Config.endID, anchor: .trailing)
                 }
                 .onAppear {
@@ -356,8 +377,16 @@ struct ChartView: View {
         }
     }
 
+    private func updateZoomLevel(level: Int) {
+        if Config.zoomLevels.contains(where: { $0.level == level }) {
+            zoomGridStep = Config.zoomGridStep[level]!
+        } else {
+            store.dispatch(.setChartZoomLevel(level: Config.zoomLevels.first!.level))
+        }
+    }
+
     private func updateGlucoseValues() {
-        if zoomMinutes == 1 {
+        if store.state.chartZoomLevel == 1 {
             cgmValues = store.state.glucoseValues.filter { value in
                 value.type == .cgm && value.quality == .OK
             }
@@ -370,11 +399,11 @@ struct ChartView: View {
             let filteredValues = store.state.glucoseValues.filter { value in
                 value.type == .cgm && value.quality == .OK
             }.map { value in
-                (value.timestamp.rounded(on: zoomMinutes, .minute), value.glucoseValue!)
+                (value.timestamp.rounded(on: store.state.chartZoomLevel, .minute), value.glucoseValue!)
             }
 
-            let groupedValues = Dictionary(grouping: filteredValues, by: { $0.0 })
-            cgmValues = groupedValues.map { group in
+            let groupedValues: [Date: [(Date, Int)]] = Dictionary(grouping: filteredValues, by: { $0.0 })
+            var cgmValues: [Glucose] = groupedValues.map { group in
                 let sumGlucoseValues = group.value.reduce(0) {
                     $0 + $1.1
                 }
@@ -384,11 +413,21 @@ struct ChartView: View {
                 return Glucose(id: UUID(), timestamp: group.key, glucose: meanGlucoseValues, type: .cgm)
             }.sorted(by: { $0.timestamp < $1.timestamp })
 
+            if let lastTimeStamp = cgmValues.last?.timestamp,
+               let lastGlucose = store.state.glucoseValues.last(where: { $0.quality == .OK && $0.type == .cgm }),
+               lastTimeStamp < lastGlucose.timestamp,
+               let lastGlucoseValue = lastGlucose.glucoseValue
+            {
+                cgmValues.append(Glucose(id: lastGlucose.id, timestamp: lastGlucose.timestamp, glucose: lastGlucoseValue, type: .cgm))
+            }
+
+            self.cgmValues = cgmValues
+
             // bgm values
             bgmValues = store.state.glucoseValues.filter { value in
                 value.type == .bgm && value.quality == .OK
             }.map { value in
-                Glucose(id: value.id, timestamp: value.timestamp.rounded(on: zoomMinutes, .minute), glucose: value.glucoseValue!, type: .bgm)
+                Glucose(id: value.id, timestamp: value.timestamp.rounded(on: store.state.chartZoomLevel, .minute), glucose: value.glucoseValue!, type: .bgm)
             }
         }
     }
@@ -405,7 +444,7 @@ struct ChartView: View {
                 let lastTimeStamp = Date().rounded(on: 1, .minute).addingTimeInterval(2 * zoomGridStep * 60)
             #endif
 
-            let glucoseSteps = Int(firstTimeStamp.distance(to: lastTimeStamp) / 60) / zoomMinutes
+            let glucoseSteps = Int(firstTimeStamp.distance(to: lastTimeStamp) / 60) / store.state.chartZoomLevel
 
             self.firstTimeStamp = firstTimeStamp
             self.lastTimeStamp = lastTimeStamp
@@ -630,7 +669,7 @@ struct ChartView: View {
 
     private func translateTimeStampToX(timestamp: Date) -> CGFloat {
         if let first = firstTimeStamp {
-            let steps = Int(first.distance(to: timestamp) / 60) / zoomMinutes
+            let steps = Int(first.distance(to: timestamp) / 60) / store.state.chartZoomLevel
 
             return translateStepsToX(steps: steps)
         }
@@ -702,10 +741,10 @@ struct ChartView: View {
         ]
 
         static let zoomLevels: [ZoomLevel] = [
-            ZoomLevel(minutes: 1, title: "1m"),
-            ZoomLevel(minutes: 5, title: "5m"),
-            ZoomLevel(minutes: 15, title: "15m"),
-            ZoomLevel(minutes: 30, title: "30m"),
+            ZoomLevel(level: 1, title: "1m"),
+            ZoomLevel(level: 5, title: "5m"),
+            ZoomLevel(level: 15, title: "15m"),
+            ZoomLevel(level: 30, title: "30m"),
         ]
 
         static let endID = "End"
@@ -724,7 +763,7 @@ struct ChartView: View {
 // MARK: - ZoomLevel
 
 struct ZoomLevel {
-    let minutes: Int
+    let level: Int
     let title: String
 }
 
