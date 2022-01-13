@@ -17,10 +17,10 @@
 "2 - USA" = "2 - USA";
 
 /* (No Comment) */
-"4 - Australian" = "4 - Australien";
+"4 - Australian" = "4 - Australien/Kanada";
 
 /* (No Comment) */
-"8 - Eastern" = "8 - Osten";
+"8 - Eastern" = "8 - Mittlerer Osten, Asien";
 
 /* (No Comment) */
 "Add" = "Hinzufügen";
@@ -110,10 +110,10 @@
 "Disconnect" = "Verbindung trennen";
 
 /* (No Comment) */
-"Disconnect sensor" = "Sensorverbindung trennen";
+"Disconnect sensor" = "Sensor trennen";
 
 /* (No Comment) */
-"Disconnected" = "Unterbrochen";
+"Disconnected" = "Verbindung getrennt";
 
 /* (No Comment) */
 "Factory calibration i1" = "i1";
@@ -554,4 +554,94 @@
 "App facebook group" = "Facebook";
 
 /* (No Comment) */
-"App email" = "eMail";
+"App email" = "E-Mail";
+
+/* (No Comment) */
+"Internal http server" = "Interner HTTP-Server";
+
+/* (No Comment) */
+"Low glucose alarm" = "Niedrige Glukose Alarm";
+
+/* (No Comment) */
+"High glucose alarm" = "Hoher Glukose Alarm";
+
+/* (No Comment) */
+"Sound: achievement" = "Achievement";
+
+/* (No Comment) */
+"Sound: none" = "Kein Alarm";
+
+/* (No Comment) */
+"Sound: alarm" = "Alarm";
+
+/* (No Comment) */
+"Sound: buzz-beep" = "Buzz-Beep";
+
+/* (No Comment) */
+"Sound: chiptone" = "Chiptone";
+
+/* (No Comment) */
+"Sound: climb-rope" = "Climb-Rope";
+
+/* (No Comment) */
+"Sound: coin-chime" = "Coin-Chime";
+
+/* (No Comment) */
+"Sound: coin-insert" = "Coin-Insert";
+
+/* (No Comment) */
+"Sound: collect-point" = "Collect-Point";
+
+/* (No Comment) */
+"Sound: expiring" = "Expiring";
+
+/* (No Comment) */
+"Sound: failure" = "Failure";
+
+/* (No Comment) */
+"Sound: future" = "Future";
+
+/* (No Comment) */
+"Sound: highlight" = "Highlight";
+
+/* (No Comment) */
+"Sound: hit" = "Hit";
+
+/* (No Comment) */
+"Sound: jump" = "Jump";
+
+/* (No Comment) */
+"Sound: long-alarm" = "Long-Alarm";
+
+/* (No Comment) */
+"Sound: lose" = "Lose";
+
+/* (No Comment) */
+"Sound: low-battery" = "Low-Battery";
+
+/* (No Comment) */
+"Sound: negative" = "Negative";
+
+/* (No Comment) */
+"Sound: ping" = "Ping";
+
+/* (No Comment) */
+"Sound: positive" = "Positive";
+
+/* (No Comment) */
+"Sound: vibration" = "Vibrieren";
+
+/* (No Comment) */
+"Please wait..." = "Bitte warten...";
+
+/* (No Comment) */
+"Scan sensor once" = "Sensor einmal scannen";
+
+/* (No Comment) */
+"Retry pairing" = "Koppeln wiederholen";
+
+/* (No Comment) */
+"Scanned sensor expired" = "Sensor abgelaufen";
+
+/* (No Comment) */
+"Ignore mute" = "Stummschaltung ignorieren";

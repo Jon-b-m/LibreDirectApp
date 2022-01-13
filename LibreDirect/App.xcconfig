@@ -3,7 +3,7 @@
 //  LibreDirect
 //
 
-APP_VERSION = 0.6
+APP_VERSION = 0.8.0
 DEVELOPMENT_TEAM = T7VZ6LU6H3
 APP_GROUP_ID = group.com.sharedGroup.aps.JBMgroup
 PRODUCT_BUNDLE_IDENTIFIER = JBM.${DEVELOPMENT_TEAM}.libre-direct

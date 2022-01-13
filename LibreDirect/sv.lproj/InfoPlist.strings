@@ -1,8 +1,8 @@
 /* Bundle display name */
-"CFBundleDisplayName" = "Glucose Direkt";
+"CFBundleDisplayName" = "Glukos Direkt";
 
 /* Bundle name */
-"CFBundleName" = "Glucose Direkt";
+"CFBundleName" = "Glukos Direkt";
 
 /* Privacy - NFC Scan Usage Description */
 "NFCReaderUsageDescription" = "NFC krävs för att läsa av anslutningsinställningar innan en Bluetooth-anslutning.";
@@ -15,3 +15,9 @@
 
 /* Privacy - Calendars Usage Description */
 "NSCalendarsUsageDescription" = "Tillgång till kalendern krävs för att visa aktuella glukosvärden på din Apple Watch.";
+
+/* Privacy - Location Always and When In Use Usage Description */
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Åtkomst till platsinfo medan appen är öppen och i bakgrunden krävs.";
+
+/* Privacy - Location When In Use Usage Description */
+"NSLocationWhenInUseUsageDescription" = "Åtkomst till platsinfo medan appen är öppen krävs.";

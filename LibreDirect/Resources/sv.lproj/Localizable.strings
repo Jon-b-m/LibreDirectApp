@@ -17,10 +17,10 @@
 "2 - USA" = "2 - USA";
 
 /* (No Comment) */
-"4 - Australian" = "4 - Australien";
+"4 - Australian" = "4 - Australien/Kanada";
 
 /* (No Comment) */
-"8 - Eastern" = "8 - Eastern";
+"8 - Eastern" = "8 - Mellanöstern, Asien";
 
 /* (No Comment) */
 "Add" = "Lägg till";
@@ -555,3 +555,93 @@
 
 /* (No Comment) */
 "App email" = "E-post";
+
+/* (No Comment) */
+"Internal http server" = "Intern http-server";
+
+/* (No Comment) */
+"Low glucose alarm" = "Lågt blodsockerlarm";
+
+/* (No Comment) */
+"High glucose alarm" = "Högt blodsockerlarm";
+
+/* (No Comment) */
+"Sound: achievement" = "Uppnått mål";
+
+/* (No Comment) */
+"Sound: none" = "Inget";
+
+/* (No Comment) */
+"Sound: alarm" = "Larm";
+
+/* (No Comment) */
+"Sound: buzz-beep" = "Surrande pip";
+
+/* (No Comment) */
+"Sound: chiptone" = "Flisa";
+
+/* (No Comment) */
+"Sound: climb-rope" = "Klättra i rep";
+
+/* (No Comment) */
+"Sound: coin-chime" = "Mynt";
+
+/* (No Comment) */
+"Sound: coin-insert" = "Mynt läggs in";
+
+/* (No Comment) */
+"Sound: collect-point" = "Samlingspunkt";
+
+/* (No Comment) */
+"Sound: expiring" = "Går ut";
+
+/* (No Comment) */
+"Sound: failure" = "Fel";
+
+/* (No Comment) */
+"Sound: future" = "Framtid";
+
+/* (No Comment) */
+"Sound: highlight" = "Höjdpunkt";
+
+/* (No Comment) */
+"Sound: hit" = "Slå";
+
+/* (No Comment) */
+"Sound: jump" = "Hoppa";
+
+/* (No Comment) */
+"Sound: long-alarm" = "Långt larm";
+
+/* (No Comment) */
+"Sound: lose" = "Lös";
+
+/* (No Comment) */
+"Sound: low-battery" = "Lågt batteri";
+
+/* (No Comment) */
+"Sound: negative" = "Negativ";
+
+/* (No Comment) */
+"Sound: ping" = "Ping-ljud";
+
+/* (No Comment) */
+"Sound: positive" = "Positiv";
+
+/* (No Comment) */
+"Sound: vibration" = "Endast vibration";
+
+/* (No Comment) */
+"Please wait..." = "Var god vänta...";
+
+/* (No Comment) */
+"Scan sensor once" = "Scan sensor once";
+
+/* (No Comment) */
+"Retry pairing" = "Retry pairing";
+
+/* (No Comment) */
+"Scanned sensor expired" = "Sensor expired";
+
+/* (No Comment) */
+"Ignore mute" = "Ignore mute";

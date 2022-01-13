@@ -8,40 +8,40 @@
 "%1$@d %2$@h %3$@min" = "%1$@d %2$@h %3$@min";
 
 /* (No Comment) */
-"0 - Unknown" = "0 - Unknown";
+"0 - Unknown" = "0 - Неизвестно";
 
 /* (No Comment) */
-"1 - European" = "1 - European";
+"1 - European" = "1 - европейский";
 
 /* (No Comment) */
-"2 - USA" = "2 - USA";
+"2 - USA" = "2 - США";
 
 /* (No Comment) */
-"4 - Australian" = "4 - Australian";
+"4 - Australian" = "4 - Австралия/Канада";
 
 /* (No Comment) */
-"8 - Eastern" = "8 - Eastern";
+"8 - Eastern" = "8 - Ближний Восток, Азия";
 
 /* (No Comment) */
-"Add" = "Add";
+"Add" = "Добавить";
 
 /* (No Comment) */
-"Add glucose for calibration" = "Add glucose for calibration";
+"Add glucose for calibration" = "Добавьте глюкозу для калибровки";
 
 /* (No Comment) */
-"Add glucose value" = "Add glucose value";
+"Add glucose value" = "Добавьте значение глюкозы";
 
 /* (No Comment) */
-"Alarm Settings" = "Alarm Settings";
+"Alarm Settings" = "Настройки оповещения";
 
 /* (No Comment) */
-"Alert, high glucose" = "Alert, high glucose";
+"Alert, high glucose" = "Тревога, высокий уровень глюкозы";
 
 /* (No Comment) */
-"Alert, low blood glucose" = "Alert, low blood glucose";
+"Alert, low blood glucose" = "Тревога, низкий уровень глюкозы в крови";
 
 /* (No Comment) */
-"Alert, sensor connection lost" = "Alert, sensor connection lost";
+"Alert, sensor connection lost" = "Тревога, соединение с датчиком потеряно";
 
 /* (No Comment) */
 "Alert, sensor expired" = "Alert, sensor expired";
@@ -77,16 +77,16 @@
 "Cancel" = "Cancel";
 
 /* (No Comment) */
-"Chart (%1$@)" = "Chart";
+"Chart (%1$@)" = "График";
 
 /* (No Comment) */
-"Connect sensor" = "Connect sensor";
+"Connect sensor" = "Подключите датчик";
 
 /* (No Comment) */
-"Connected" = "Connected";
+"Connected" = "Подключено";
 
 /* (No Comment) */
-"Connecting" = "Connecting";
+"Connecting" = "Подключение…";
 
 /* (No Comment) */
 "Connection alarm" = "Connection alarm";
@@ -555,3 +555,93 @@
 
 /* (No Comment) */
 "App email" = "eMail";
+
+/* (No Comment) */
+"Internal http server" = "Internal http server";
+
+/* (No Comment) */
+"Low glucose alarm" = "Low glucose alarm";
+
+/* (No Comment) */
+"High glucose alarm" = "High glucose alarm";
+
+/* (No Comment) */
+"Sound: achievement" = "Achievement";
+
+/* (No Comment) */
+"Sound: none" = "None";
+
+/* (No Comment) */
+"Sound: alarm" = "Alarm";
+
+/* (No Comment) */
+"Sound: buzz-beep" = "Buzz-Beep";
+
+/* (No Comment) */
+"Sound: chiptone" = "Chiptone";
+
+/* (No Comment) */
+"Sound: climb-rope" = "Climb-Rope";
+
+/* (No Comment) */
+"Sound: coin-chime" = "Coin-Chime";
+
+/* (No Comment) */
+"Sound: coin-insert" = "Coin-Insert";
+
+/* (No Comment) */
+"Sound: collect-point" = "Collect-Point";
+
+/* (No Comment) */
+"Sound: expiring" = "Expiring";
+
+/* (No Comment) */
+"Sound: failure" = "Failure";
+
+/* (No Comment) */
+"Sound: future" = "Future";
+
+/* (No Comment) */
+"Sound: highlight" = "Highlight";
+
+/* (No Comment) */
+"Sound: hit" = "Hit";
+
+/* (No Comment) */
+"Sound: jump" = "Jump";
+
+/* (No Comment) */
+"Sound: long-alarm" = "Long-alarm";
+
+/* (No Comment) */
+"Sound: lose" = "Lose";
+
+/* (No Comment) */
+"Sound: low-battery" = "Low-Battery";
+
+/* (No Comment) */
+"Sound: negative" = "Negative";
+
+/* (No Comment) */
+"Sound: ping" = "Ping";
+
+/* (No Comment) */
+"Sound: positive" = "Positive";
+
+/* (No Comment) */
+"Sound: vibration" = "Vibrate only";
+
+/* (No Comment) */
+"Please wait..." = "Please wait...";
+
+/* (No Comment) */
+"Scan sensor once" = "Scan sensor once";
+
+/* (No Comment) */
+"Retry pairing" = "Retry pairing";
+
+/* (No Comment) */
+"Scanned sensor expired" = "Sensor expired";
+
+/* (No Comment) */
+"Ignore mute" = "Ignore mute";

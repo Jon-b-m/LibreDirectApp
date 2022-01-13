@@ -41,6 +41,13 @@ struct TextInfo {
     let highlight: Bool
 }
 
+// MARK: - GlucoseInfo
+
+struct GlucoseInfo {
+    let x: CGFloat
+    let glucose: Glucose
+}
+
 // MARK: - SizePreferenceKey
 
 struct SizePreferenceKey: PreferenceKey {
@@ -52,11 +59,13 @@ struct SizePreferenceKey: PreferenceKey {
 // MARK: - ChartView
 
 struct ChartView: View {
+    // MARK: Internal
+
     @EnvironmentObject var store: AppStore
 
     @Environment(\.colorScheme) var colorScheme
 
-    @StateObject private var updater = MinuteUpdater()
+    @StateObject var updater = MinuteUpdater()
     @State var alarmHighGridPath = Path()
     @State var alarmLowGridPath = Path()
     @State var firstTimeStamp: Date? = nil
@@ -72,6 +81,8 @@ struct ChartView: View {
     @State var deviceOrientation = UIDevice.current.orientation
     @State var deviceColorScheme = ColorScheme.light
     @State var cgmValues: [Glucose] = []
+    @State var cgmInfos: [GlucoseInfo] = []
+    @State var glucoseInfo: GlucoseInfo? = nil
     @State var bgmValues: [Glucose] = []
     @State var zoomGridStep = Config.zoomGridStep[Config.zoomLevels.first!.level]!
 
@@ -90,20 +101,7 @@ struct ChartView: View {
             .onChange(of: colorScheme) { scheme in
                 if deviceColorScheme != scheme {
                     AppLog.info("onChange colorScheme: \(scheme)")
-
                     deviceColorScheme = scheme
-                }
-            }
-            .onRotate { rotation in
-                if deviceOrientation != rotation {
-                    deviceOrientation = rotation
-
-                    AppLog.info("onRotate, isPortrait: \(rotation.isPortrait)")
-
-                    updateYGrid(fullSize: geo.size, alarmLow: store.state.alarmLow, alarmHigh: store.state.alarmHigh, targetValue: store.state.targetValue, glucoseUnit: store.state.glucoseUnit)
-                    updateAlarmLowGrid(fullSize: geo.size, alarmLow: store.state.alarmLow)
-                    updateAlarmHighGrid(fullSize: geo.size, alarmHigh: store.state.alarmHigh)
-                    updateTargetGrid(fullSize: geo.size, targetValue: store.state.targetValue)
                 }
             }
             .onChange(of: store.state.chartShowLines) { chartShowLines in
@@ -138,20 +136,19 @@ struct ChartView: View {
             .onChange(of: store.state.glucoseValues) { _ in
                 AppLog.info("onChange glucoseValues: \(store.state.glucoseValues.count)")
 
-                updateGlucoseValues()
                 updateHelpVariables(fullSize: geo.size, glucoseValues: store.state.glucoseValues)
-
-                updateXGrid(fullSize: geo.size, firstTimeStamp: self.firstTimeStamp, lastTimeStamp: self.lastTimeStamp)
-
-                updateCgmPath(fullSize: geo.size, glucoseValues: cgmValues)
-                updateBgmPath(fullSize: geo.size, glucoseValues: bgmValues)
+                updateGlucoseValues(glucoseValues: store.state.glucoseValues)
             }
             .onChange(of: store.state.chartZoomLevel) { zoomLevel in
                 AppLog.info("onChange zoomLevel: \(zoomLevel)")
 
                 updateZoomLevel(level: zoomLevel)
-                updateGlucoseValues()
+
                 updateHelpVariables(fullSize: geo.size, glucoseValues: store.state.glucoseValues)
+                updateGlucoseValues(glucoseValues: store.state.glucoseValues)
+            }
+            .onChange(of: [bgmValues, cgmValues]) { _ in
+                AppLog.info("onChange bgmValues/cgmValues")
 
                 updateYGrid(fullSize: geo.size, alarmLow: store.state.alarmLow, alarmHigh: store.state.alarmHigh, targetValue: store.state.targetValue, glucoseUnit: store.state.glucoseUnit)
                 updateXGrid(fullSize: geo.size, firstTimeStamp: self.firstTimeStamp, lastTimeStamp: self.lastTimeStamp)
@@ -163,22 +160,14 @@ struct ChartView: View {
                 updateCgmPath(fullSize: geo.size, glucoseValues: cgmValues)
                 updateBgmPath(fullSize: geo.size, glucoseValues: bgmValues)
             }
+
             .onAppear {
                 AppLog.info("onAppear")
 
                 updateZoomLevel(level: store.state.chartZoomLevel)
-                updateGlucoseValues()
+
                 updateHelpVariables(fullSize: geo.size, glucoseValues: store.state.glucoseValues)
-
-                updateYGrid(fullSize: geo.size, alarmLow: store.state.alarmLow, alarmHigh: store.state.alarmHigh, targetValue: store.state.targetValue, glucoseUnit: store.state.glucoseUnit)
-                updateXGrid(fullSize: geo.size, firstTimeStamp: self.firstTimeStamp, lastTimeStamp: self.lastTimeStamp)
-
-                updateAlarmLowGrid(fullSize: geo.size, alarmLow: store.state.alarmLow)
-                updateAlarmHighGrid(fullSize: geo.size, alarmHigh: store.state.alarmHigh)
-                updateTargetGrid(fullSize: geo.size, targetValue: store.state.targetValue)
-
-                updateCgmPath(fullSize: geo.size, glucoseValues: cgmValues)
-                updateBgmPath(fullSize: geo.size, glucoseValues: bgmValues)
+                updateGlucoseValues(glucoseValues: store.state.glucoseValues)
             }
         }
     }
@@ -245,6 +234,90 @@ struct ChartView: View {
         }
     }
 
+    // MARK: Private
+
+    private enum Config {
+        enum alarm {
+            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
+
+            static var color: Color { Color.ui.red.opacity(opacity) }
+        }
+
+        enum target {
+            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
+
+            static var color: Color { Color.ui.green.opacity(opacity) }
+        }
+
+        enum now {
+            static let strokeStyle = StrokeStyle(lineWidth: lineWidth, dash: [4, 8])
+
+            static var color: Color { Color.ui.blue.opacity(opacity) }
+        }
+
+        enum dot {
+            static let size: CGFloat = 3.5
+
+            static var cgmColor: Color { Color(hex: "#36454F") | Color(hex: "#E5E4E2") }
+            static var bgmColor: Color { Color.ui.red }
+        }
+
+        enum line {
+            static var size = 2.5
+
+            static var cgmColor: Color { Color(hex: "#36454F") | Color(hex: "#E5E4E2") }
+            static var bgmColor: Color { Color.ui.red }
+        }
+
+        enum x {
+            static let fontSize: CGFloat = 12
+            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
+            static let stepWidth: Double = 5
+
+            static var color: Color { Color(hex: "#E4E6EB") | Color(hex: "#404040") } // .opacity(opacity)
+            static var textColor: Color { Color(hex: "#181818") | Color(hex: "#A0A0A0") }
+        }
+
+        enum y {
+            static let additionalBottom: CGFloat = fontSize * 2
+            static let fontSize: CGFloat = 12
+            static let fontWidth: CGFloat = 28
+            static let padding: CGFloat = 20
+            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
+
+            static let mgdLGrid: [Int] = [0, 50, 100, 150, 200, 250, 300, 350]
+            static let mmolLGrid: [Int] = [0, 54, 108, 162, 216, 270, 324]
+
+            static var color: Color { Color(hex: "#E4E6EB") | Color(hex: "#404040") }
+            static var textColor: Color { Color(hex: "#181818") | Color(hex: "#A0A0A0") }
+        }
+
+        static let zoomGridStep: [Int: Double] = [
+            1: 15,
+            5: 60,
+            15: 180,
+            30: 360,
+        ]
+
+        static let zoomLevels: [ZoomLevel] = [
+            ZoomLevel(level: 1, title: "1m"),
+            ZoomLevel(level: 5, title: "5m"),
+            ZoomLevel(level: 15, title: "15m"),
+            ZoomLevel(level: 30, title: "30m"),
+        ]
+
+        static let endID = "End"
+        static let height: CGFloat = 350
+        static let lineWidth = 0.1
+        static let maxGlucose = 350
+        static let minGlucose = 0
+        static let opacity = 0.5
+
+        static var backgroundColor: Color { Color(hex: "#F5F5F5") | Color(hex: "#181818") }
+    }
+
+    private let calculationQueue = DispatchQueue(label: "libre-direct.chart-calculation")
+
     private func scrollGridView(fullSize: CGSize) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             ScrollViewReader { scroll in
@@ -265,16 +338,15 @@ struct ChartView: View {
                     bgmDotsView().zIndex(4)
                 }
                 .frame(width: CGFloat(Double(glucoseSteps) * Config.x.stepWidth))
-                .onChange(of: cgmValues) { _ in
-                    scroll.scrollTo(Config.endID, anchor: .trailing)
-                }
-                .onChange(of: bgmValues) { _ in
+                /* .gesture(DragGesture(minimumDistance: 0).onChanged { value in
+                     findGlucoseInfo(x: value.location.x)
+                 }) */
+                .onChange(of: store.state.glucoseValues) { _ in
                     scroll.scrollTo(Config.endID, anchor: .trailing)
                 }
                 .onChange(of: store.state.chartZoomLevel) { _ in
                     scroll.scrollTo(Config.endID, anchor: .trailing)
-                }
-                .onAppear {
+                }.onAppear {
                     DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(250)) {
                         scroll.scrollTo(Config.endID, anchor: .trailing)
                     }
@@ -385,53 +457,6 @@ struct ChartView: View {
         }
     }
 
-    private func updateGlucoseValues() {
-        if store.state.chartZoomLevel == 1 {
-            cgmValues = store.state.glucoseValues.filter { value in
-                value.type == .cgm && value.quality == .OK
-            }
-
-            bgmValues = store.state.glucoseValues.filter { value in
-                value.type == .bgm && value.quality == .OK
-            }
-        } else {
-            // cgm values
-            let filteredValues = store.state.glucoseValues.filter { value in
-                value.type == .cgm && value.quality == .OK
-            }.map { value in
-                (value.timestamp.toRounded(on: store.state.chartZoomLevel, .minute), value.glucoseValue!)
-            }
-
-            let groupedValues: [Date: [(Date, Int)]] = Dictionary(grouping: filteredValues, by: { $0.0 })
-            var cgmValues: [Glucose] = groupedValues.map { group in
-                let sumGlucoseValues = group.value.reduce(0) {
-                    $0 + $1.1
-                }
-
-                let meanGlucoseValues = sumGlucoseValues / group.value.count
-
-                return Glucose(id: UUID(), timestamp: group.key, glucose: meanGlucoseValues, type: .cgm)
-            }.sorted(by: { $0.timestamp < $1.timestamp })
-
-            if let lastTimeStamp = cgmValues.last?.timestamp,
-               let lastGlucose = store.state.glucoseValues.last(where: { $0.quality == .OK && $0.type == .cgm }),
-               lastTimeStamp < lastGlucose.timestamp,
-               let lastGlucoseValue = lastGlucose.glucoseValue
-            {
-                cgmValues.append(Glucose(id: lastGlucose.id, timestamp: lastGlucose.timestamp, glucose: lastGlucoseValue, type: .cgm))
-            }
-
-            self.cgmValues = cgmValues
-
-            // bgm values
-            bgmValues = store.state.glucoseValues.filter { value in
-                value.type == .bgm && value.quality == .OK
-            }.map { value in
-                Glucose(id: value.id, timestamp: value.timestamp.toRounded(on: store.state.chartZoomLevel, .minute), glucose: value.glucoseValue!, type: .bgm)
-            }
-        }
-    }
-
     private func updateHelpVariables(fullSize: CGSize, glucoseValues: [Glucose]) {
         AppLog.info("updateHelpVariables")
 
@@ -449,6 +474,67 @@ struct ChartView: View {
             self.firstTimeStamp = firstTimeStamp
             self.lastTimeStamp = lastTimeStamp
             self.glucoseSteps = glucoseSteps
+        }
+    }
+
+    private func findGlucoseInfo(x: CGFloat) {
+        let halfSize = Config.x.stepWidth / 2
+
+        let glucoseInfo = cgmInfos.reversed().first(where: { info in
+            info.x - halfSize < x && info.x + halfSize > x
+        })
+
+        self.glucoseInfo = glucoseInfo
+    }
+
+    private func updateGlucoseValues(glucoseValues: [Glucose]) {
+        AppLog.info("updateGlucoseValues")
+
+        calculationQueue.async {
+            if store.state.chartZoomLevel == 1 {
+                let cgmValues = glucoseValues.filter { value in
+                    value.type == .cgm && value.quality == .OK
+                }
+
+                let bgmValues = glucoseValues.filter { value in
+                    value.type == .bgm && value.quality == .OK
+                }
+
+                DispatchQueue.main.async {
+                    self.cgmValues = cgmValues
+                    self.bgmValues = bgmValues
+                }
+            } else {
+                // cgm values
+                let filteredValues = glucoseValues.filter { value in
+                    value.type == .cgm && value.quality == .OK
+                }.map { value in
+                    (value.timestamp.toRounded(on: store.state.chartZoomLevel, .minute), value.glucoseValue!)
+                }
+
+                let groupedValues: [Date: [(Date, Int)]] = Dictionary(grouping: filteredValues, by: { $0.0 })
+                let cgmValues: [Glucose] = groupedValues.map { group in
+                    let sumGlucoseValues = group.value.reduce(0) {
+                        $0 + $1.1
+                    }
+
+                    let meanGlucoseValues = sumGlucoseValues / group.value.count
+
+                    return Glucose(id: UUID(), timestamp: group.key, glucose: meanGlucoseValues, type: .cgm)
+                }.sorted(by: { $0.timestamp < $1.timestamp })
+
+                // bgm values
+                let bgmValues = glucoseValues.filter { value in
+                    value.type == .bgm && value.quality == .OK
+                }.map { value in
+                    Glucose(id: value.id, timestamp: value.timestamp.toRounded(on: store.state.chartZoomLevel, .minute), glucose: value.glucoseValue!, type: .bgm)
+                }
+
+                DispatchQueue.main.async {
+                    self.cgmValues = cgmValues
+                    self.bgmValues = bgmValues
+                }
+            }
         }
     }
 
@@ -492,10 +578,11 @@ struct ChartView: View {
 
     private func updateCgmPath(fullSize: CGSize, glucoseValues: [Glucose]) {
         AppLog.info("updateCgmPath")
-
         var isFirst = true
 
         calculationQueue.async {
+            var cgmInfo: [GlucoseInfo] = []
+
             let cgmPath = Path { path in
                 for glucose in glucoseValues {
                     guard let glucoseValue = glucose.glucoseValue else {
@@ -504,6 +591,8 @@ struct ChartView: View {
 
                     let x = self.translateTimeStampToX(timestamp: glucose.timestamp)
                     let y = self.translateGlucoseToY(fullSize: fullSize, glucose: CGFloat(glucoseValue))
+
+                    cgmInfo.append(GlucoseInfo(x: x, glucose: glucose))
 
                     if store.state.chartShowLines {
                         if isFirst {
@@ -520,6 +609,7 @@ struct ChartView: View {
 
             DispatchQueue.main.async {
                 self.cgmPath = cgmPath
+                self.cgmInfos = cgmInfo
             }
         }
     }
@@ -676,88 +766,6 @@ struct ChartView: View {
 
         return 0
     }
-
-    private enum Config {
-        enum alarm {
-            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
-
-            static var color: Color { Color.ui.red.opacity(opacity) }
-        }
-
-        enum target {
-            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
-
-            static var color: Color { Color.ui.green.opacity(opacity) }
-        }
-
-        enum now {
-            static let strokeStyle = StrokeStyle(lineWidth: lineWidth, dash: [4, 8])
-
-            static var color: Color { Color.ui.blue.opacity(opacity) }
-        }
-
-        enum dot {
-            static let size: CGFloat = 3.5
-
-            static var cgmColor: Color { Color(hex: "#36454F") | Color(hex: "#E5E4E2") }
-            static var bgmColor: Color { Color.ui.red }
-        }
-
-        enum line {
-            static var size = 2.5
-
-            static var cgmColor: Color { Color(hex: "#36454F") | Color(hex: "#E5E4E2") }
-            static var bgmColor: Color { Color.ui.red }
-        }
-
-        enum x {
-            static let fontSize: CGFloat = 12
-            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
-            static let stepWidth: Double = 5
-
-            static var color: Color { Color(hex: "#E4E6EB") | Color(hex: "#404040") } // .opacity(opacity)
-            static var textColor: Color { Color(hex: "#181818") | Color(hex: "#A0A0A0") }
-        }
-
-        enum y {
-            static let additionalBottom: CGFloat = fontSize * 2
-            static let fontSize: CGFloat = 12
-            static let fontWidth: CGFloat = 28
-            static let padding: CGFloat = 20
-            static let strokeStyle = StrokeStyle(lineWidth: lineWidth)
-
-            static let mgdLGrid: [Int] = [0, 50, 100, 150, 200, 250, 300, 350]
-            static let mmolLGrid: [Int] = [0, 54, 108, 162, 216, 270, 324]
-
-            static var color: Color { Color(hex: "#E4E6EB") | Color(hex: "#404040") }
-            static var textColor: Color { Color(hex: "#181818") | Color(hex: "#A0A0A0") }
-        }
-
-        static let zoomGridStep: [Int: Double] = [
-            1: 15,
-            5: 60,
-            15: 180,
-            30: 360,
-        ]
-
-        static let zoomLevels: [ZoomLevel] = [
-            ZoomLevel(level: 1, title: "1m"),
-            ZoomLevel(level: 5, title: "5m"),
-            ZoomLevel(level: 15, title: "15m"),
-            ZoomLevel(level: 30, title: "30m"),
-        ]
-
-        static let endID = "End"
-        static let height: CGFloat = 350
-        static let lineWidth = 0.1
-        static let maxGlucose = 350
-        static let minGlucose = 0
-        static let opacity = 0.5
-
-        static var backgroundColor: Color { Color(hex: "#F5F5F5") | Color(hex: "#181818") }
-    }
-
-    private let calculationQueue = DispatchQueue(label: "libre-direct.chart-calculation")
 }
 
 // MARK: - ZoomLevel
