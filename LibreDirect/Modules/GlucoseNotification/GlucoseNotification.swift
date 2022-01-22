@@ -129,8 +129,6 @@ private class GlucoseNotificationService {
     }
 
     func setGlucoseBadge(glucose: Glucose, glucoseUnit: GlucoseUnit) {
-        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
-
         NotificationService.shared.ensureCanSendNotification { state in
             AppLog.info("Glucose info, state: \(state)")
 
@@ -155,9 +153,9 @@ private class GlucoseNotificationService {
                 notification.badge = glucoseValue.asRoundedMmolL as NSNumber
             }
 
-            notification.title = String(format: LocalizedString("Blood glucose: %1$@", comment: ""), glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true))
+            notification.title = String(format: LocalizedString("Blood glucose: %1$@"), glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true))
             notification.body = String(
-                format: LocalizedString("Your current glucose is %1$@ (%2$@).", comment: ""),
+                format: LocalizedString("Your current glucose is %1$@ (%2$@)."),
                 glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
                 glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? "?"
             )
@@ -167,8 +165,6 @@ private class GlucoseNotificationService {
     }
 
     func setLowGlucoseAlarm(glucose: Glucose, glucoseUnit: GlucoseUnit, ignoreMute: Bool, sound: NotificationSound) {
-        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
-
         NotificationService.shared.ensureCanSendNotification { state in
             AppLog.info("Glucose alert, state: \(state)")
 
@@ -194,7 +190,7 @@ private class GlucoseNotificationService {
                 notification.badge = glucoseValue.asRoundedMmolL as NSNumber
             }
 
-            notification.title = LocalizedString("Alert, low blood glucose", comment: "")
+            notification.title = LocalizedString("Alert, low blood glucose")
             notification.body = String(
                 format: LocalizedString("Your glucose %1$@ (%2$@) is dangerously low. With sweetened drinks or dextrose, blood glucose levels can often return to normal."),
                 glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
@@ -210,8 +206,6 @@ private class GlucoseNotificationService {
     }
 
     func setHighGlucoseAlarm(glucose: Glucose, glucoseUnit: GlucoseUnit, ignoreMute: Bool, sound: NotificationSound) {
-        dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
-
         NotificationService.shared.ensureCanSendNotification { state in
             AppLog.info("Glucose alert, state: \(state)")
 
@@ -237,7 +231,7 @@ private class GlucoseNotificationService {
                 notification.badge = glucoseValue.asRoundedMmolL as NSNumber
             }
 
-            notification.title = LocalizedString("Alert, high glucose", comment: "")
+            notification.title = LocalizedString("Alert, high glucose")
             notification.body = String(
                 format: LocalizedString("Your glucose %1$@ (%2$@) is dangerously high and needs to be treated."),
                 glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),

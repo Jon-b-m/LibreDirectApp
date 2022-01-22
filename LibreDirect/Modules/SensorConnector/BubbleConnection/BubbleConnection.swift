@@ -32,7 +32,6 @@ class BubbleConnection: SensorBLEConnectionBase {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
@@ -47,7 +46,6 @@ class BubbleConnection: SensorBLEConnectionBase {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
@@ -69,7 +67,6 @@ class BubbleConnection: SensorBLEConnectionBase {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
@@ -78,16 +75,14 @@ class BubbleConnection: SensorBLEConnectionBase {
             return
         }
 
-        peripheral.writeValue(Data([0x00, 0x00, 0x01]), for: writeCharacteristic, type: .withResponse)
+        peripheral.writeValue(Data([0x00, 0x00, UInt8(sensorInterval)]), for: writeCharacteristic, type: .withResponse)
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         guard let value = characteristic.value else {

@@ -25,15 +25,13 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
         "abbott"
     }
 
-    func scanSensor() {
-        dispatchPrecondition(condition: .notOnQueue(managerQueue))
+    func scanSensor(noPairing: Bool) {
         AppLog.info("ReadSensor")
 
-        pairingService.readSensor(noPairing: true)
+        pairingService.readSensor(noPairing: noPairing)
     }
 
     override func pairSensor() {
-        dispatchPrecondition(condition: .notOnQueue(managerQueue))
         AppLog.info("PairSensor")
 
         UserDefaults.standard.sensorPeripheralUuid = nil
@@ -58,7 +56,6 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
     }
 
     func unlock() -> Data? {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Unlock, count: \(UserDefaults.standard.libre2UnlockCount)")
 
         if sensor == nil {
@@ -76,7 +73,6 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
     }
 
     override func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Found peripheral: \(peripheral.name ?? "-")")
 
         guard let sensor = sensor, let manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data else {
@@ -99,7 +95,6 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
@@ -114,7 +109,6 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
@@ -139,14 +133,12 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
@@ -157,7 +149,6 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        dispatchPrecondition(condition: .onQueue(managerQueue))
         AppLog.info("Peripheral: \(peripheral)")
 
         sendUpdate(error: error)
@@ -181,6 +172,17 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
 
         if !firstBuffer.isEmpty, !secondBuffer.isEmpty, !thirdBuffer.isEmpty {
             let rxBuffer = firstBuffer + secondBuffer + thirdBuffer
+            
+            let intervalSeconds = sensorInterval * 60 - 45
+            guard sensorInterval == 1 || lastTimestamp == nil || lastTimestamp! + Double(intervalSeconds) <= Date() else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
+                    self.resetBuffer()
+                }
+                
+                return
+            }
+            
+            lastTimestamp = Date()
 
             if let sensor = sensor {
                 do {
@@ -202,7 +204,7 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
                 }
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
                 self.resetBuffer()
             }
         }
@@ -221,6 +223,8 @@ final class Libre2Connection: SensorBLEConnectionBase, SensorNFCConnection {
     private var firstBuffer = Data()
     private var secondBuffer = Data()
     private var thirdBuffer = Data()
+
+    private var lastTimestamp: Date?
 }
 
 private extension UserDefaults {

@@ -645,3 +645,15 @@
 
 /* (No Comment) */
 "Ignore mute" = "Stummschaltung ignorieren";
+
+/* (No Comment) */
+"Retrieval interval" = "Aktualisierungs-Intervall";
+
+/* (No Comment) */
+"Retrieval interval, every minute" = "Jede Minute";
+
+/* (No Comment) */
+"Retrieval interval, every %1$@ minutes" = "Alle %1$@ Minuten";
+
+/* (No Comment) */
+"App donate" = "Donate";
