@@ -635,7 +635,7 @@
 "Please wait..." = "Var god vänta...";
 
 /* (No Comment) */
-"Scan sensor once" = "Skanna sensorn en gång";
+"Scan sensor" = "Skanna sensorn en gång";
 
 /* (No Comment) */
 "Retry pairing" = "Försök att parkoppla igen";
@@ -653,7 +653,19 @@
 "Retrieval interval, every minute" = "Varje minut";
 
 /* (No Comment) */
-"Retrieval interval, every %1$@ minutes" = "Var %1$@ minut";
- 
+"Retrieval interval, every %1$@ minutes" = "Var %1$s:e minut";
+
 /* (No Comment) */
-"App donate" = "Donate";
+"App donate" = "Donera";
+
+/* (No Comment) */
+"Bellman alarm" = "Larm";
+
+/* (No Comment) */
+"Bellman test alarm" = "Testa larm";
+
+/* (No Comment) */
+"Bellman Telephone Transceiver BT" = "Bellman Telephone Transceiver BT";
+
+/* (No Comment) */
+"Find transmitter" = "Find transmitter";

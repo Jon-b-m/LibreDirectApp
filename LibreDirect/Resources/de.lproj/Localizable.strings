@@ -635,7 +635,7 @@
 "Please wait..." = "Bitte warten...";
 
 /* (No Comment) */
-"Scan sensor once" = "Sensor einmal scannen";
+"Scan sensor" = "Sensor scannen";
 
 /* (No Comment) */
 "Retry pairing" = "Koppeln wiederholen";
@@ -656,4 +656,16 @@
 "Retrieval interval, every %1$@ minutes" = "Alle %1$@ Minuten";
 
 /* (No Comment) */
-"App donate" = "Donate";
+"App donate" = "Spenden";
+
+/* (No Comment) */
+"Bellman alarm" = "Alarm";
+
+/* (No Comment) */
+"Bellman test alarm" = "Alarm testen";
+
+/* (No Comment) */
+"Bellman Telephone Transceiver BT" = "Bellman Telephone Transceiver BT";
+
+/* (No Comment) */
+"Find transmitter" = "Find transmitter";
