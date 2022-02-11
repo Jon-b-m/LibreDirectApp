@@ -9,37 +9,27 @@ import UIKit
 import UserNotifications
 
 func glucoseNotificationMiddelware() -> Middleware<AppState, AppAction> {
-    return glucoseNotificationMiddelware(service: {
+    return glucoseNotificationMiddelware(service: LazyService<GlucoseNotificationService>(initialization: {
         GlucoseNotificationService()
-    }())
+    }))
 }
 
-private func glucoseNotificationMiddelware(service: GlucoseNotificationService) -> Middleware<AppState, AppAction> {
+private func glucoseNotificationMiddelware(service: LazyService<GlucoseNotificationService>) -> Middleware<AppState, AppAction> {
     return { state, action, _ in
         switch action {
         case .setHighGlucoseAlarmSound(sound: let sound):
             if sound == .none {
-                service.clearAlarm()
+                service.value.clear()
             }
 
         case .setLowGlucoseAlarmSound(sound: let sound):
             if sound == .none {
-                service.clearAlarm()
+                service.value.clear()
             }
 
         case .setGlucoseBadge(enabled: let enabled):
             if !enabled {
-                service.clearBadge()
-            }
-
-        case .setAlarmSnoozeUntil(untilDate: let untilDate, autosnooze: let autosnooze):
-            guard untilDate != nil else {
-                AppLog.info("Guard: untilDate is nil")
-                break
-            }
-
-            if !autosnooze {
-                service.clearAlarm()
+                service.value.clear()
             }
 
         case .setGlucoseUnit(unit: let unit):
@@ -47,7 +37,7 @@ private func glucoseNotificationMiddelware(service: GlucoseNotificationService) 
                 break
             }
 
-            service.setGlucoseBadge(glucose: glucose, glucoseUnit: unit)
+            service.value.setGlucoseBadge(glucose: glucose, glucoseUnit: unit)
 
         case .addGlucoseValues(glucoseValues: let glucoseValues):
             guard let glucose = glucoseValues.last else {
@@ -72,32 +62,30 @@ private func glucoseNotificationMiddelware(service: GlucoseNotificationService) 
 
             AppLog.info("isSnoozed: \(isSnoozed)")
 
-            if state.lowGlucoseAlarm, glucoseValue < state.alarmLow, !isSnoozed {
+            if state.lowGlucoseAlarm, glucoseValue < state.alarmLow {
                 AppLog.info("Glucose alert, low: \(glucose.glucoseValue) < \(state.alarmLow)")
 
-                service.clearBadge()
-                service.setLowGlucoseAlarm(glucose: glucose, glucoseUnit: state.glucoseUnit, ignoreMute: state.ignoreMute, sound: state.lowGlucoseAlarmSound)
+                service.value.setLowGlucoseAlarm(glucose: glucose, glucoseUnit: state.glucoseUnit, ignoreMute: state.ignoreMute, sound: isSnoozed ? .none : state.lowGlucoseAlarmSound)
 
-                return Just(.setAlarmSnoozeUntil(untilDate: Date().addingTimeInterval(5 * 60).toRounded(on: 1, .minute), autosnooze: true))
-                    .setFailureType(to: AppError.self)
-                    .eraseToAnyPublisher()
+                if !isSnoozed {
+                    return Just(.setAlarmSnoozeUntil(untilDate: Date().addingTimeInterval(5 * 60).toRounded(on: 1, .minute), autosnooze: true))
+                        .setFailureType(to: AppError.self)
+                        .eraseToAnyPublisher()
+                }
 
-            } else if state.highGlucoseAlarm, glucoseValue > state.alarmHigh, !isSnoozed {
+            } else if state.highGlucoseAlarm, glucoseValue > state.alarmHigh {
                 AppLog.info("Glucose alert, high: \(glucose.glucoseValue) > \(state.alarmHigh)")
 
-                service.clearBadge()
-                service.setHighGlucoseAlarm(glucose: glucose, glucoseUnit: state.glucoseUnit, ignoreMute: state.ignoreMute, sound: state.highGlucoseAlarmSound)
+                service.value.setHighGlucoseAlarm(glucose: glucose, glucoseUnit: state.glucoseUnit, ignoreMute: state.ignoreMute, sound: isSnoozed ? .none : state.highGlucoseAlarmSound)
 
-                return Just(.setAlarmSnoozeUntil(untilDate: Date().addingTimeInterval(5 * 60).toRounded(on: 1, .minute), autosnooze: true))
-                    .setFailureType(to: AppError.self)
-                    .eraseToAnyPublisher()
+                if !isSnoozed {
+                    return Just(.setAlarmSnoozeUntil(untilDate: Date().addingTimeInterval(5 * 60).toRounded(on: 1, .minute), autosnooze: true))
+                        .setFailureType(to: AppError.self)
+                        .eraseToAnyPublisher()
+                }
 
             } else if state.glucoseBadge {
-                service.setGlucoseBadge(glucose: glucose, glucoseUnit: state.glucoseUnit)
-            }
-
-            if glucoseValue >= state.alarmLow, glucoseValue <= state.alarmHigh {
-                service.clearAlarm()
+                service.value.setGlucoseBadge(glucose: glucose, glucoseUnit: state.glucoseUnit)
             }
 
         default:
@@ -111,21 +99,21 @@ private func glucoseNotificationMiddelware(service: GlucoseNotificationService) 
 // MARK: - GlucoseNotificationService
 
 private class GlucoseNotificationService {
+    // MARK: Lifecycle
+
+    init() {
+        AppLog.info("Create GlucoseNotificationService")
+    }
+
     // MARK: Internal
 
     enum Identifier: String {
-        case sensorGlucoseBadge = "libre-direct.notifications.sensor-glucose-badge"
         case sensorGlucoseAlarm = "libre-direct.notifications.sensor-glucose-alarm"
     }
 
-    func clearAlarm() {
-        NotificationService.shared.stopSound()
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [Identifier.sensorGlucoseAlarm.rawValue])
-    }
-
-    func clearBadge() {
+    func clear() {
         UIApplication.shared.applicationIconBadgeNumber = 0
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [Identifier.sensorGlucoseBadge.rawValue])
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [Identifier.sensorGlucoseAlarm.rawValue])
     }
 
     func setGlucoseBadge(glucose: Glucose, glucoseUnit: GlucoseUnit) {
@@ -141,11 +129,8 @@ private class GlucoseNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = NotificationService.SilentSound
-
-            if #available(iOS 15.0, *) {
-                notification.interruptionLevel = .passive
-            }
+            notification.sound = .none
+            notification.interruptionLevel = .passive
 
             if glucoseUnit == .mgdL {
                 notification.badge = glucoseValue as NSNumber
@@ -154,13 +139,12 @@ private class GlucoseNotificationService {
             }
 
             notification.title = String(format: LocalizedString("Blood glucose: %1$@"), glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true))
-            notification.body = String(
-                format: LocalizedString("Your current glucose is %1$@ (%2$@)."),
-                glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
-                glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? "?"
+            notification.body = String(format: LocalizedString("Your current glucose is %1$@ (%2$@)."),
+                                       glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
+                                       glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? "?"
             )
 
-            NotificationService.shared.add(identifier: Identifier.sensorGlucoseBadge.rawValue, content: notification)
+            NotificationService.shared.add(identifier: Identifier.sensorGlucoseAlarm.rawValue, content: notification)
         }
     }
 
@@ -177,12 +161,9 @@ private class GlucoseNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = NotificationService.SilentSound
+            notification.sound = .none
             notification.userInfo = self.actions
-
-            if #available(iOS 15.0, *) {
-                notification.interruptionLevel = .critical
-            }
+            notification.interruptionLevel = sound == .none ? .passive : .timeSensitive
 
             if glucoseUnit == .mgdL {
                 notification.badge = glucoseValue as NSNumber
@@ -191,10 +172,9 @@ private class GlucoseNotificationService {
             }
 
             notification.title = LocalizedString("Alert, low blood glucose")
-            notification.body = String(
-                format: LocalizedString("Your glucose %1$@ (%2$@) is dangerously low. With sweetened drinks or dextrose, blood glucose levels can often return to normal."),
-                glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
-                glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? "?"
+            notification.body = String(format: LocalizedString("Your glucose %1$@ (%2$@) is dangerously low. With sweetened drinks or dextrose, blood glucose levels can often return to normal."),
+                                       glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
+                                       glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? "?"
             )
 
             NotificationService.shared.add(identifier: Identifier.sensorGlucoseAlarm.rawValue, content: notification)
@@ -218,12 +198,9 @@ private class GlucoseNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = NotificationService.SilentSound
+            notification.sound = .none
             notification.userInfo = self.actions
-
-            if #available(iOS 15.0, *) {
-                notification.interruptionLevel = .critical
-            }
+            notification.interruptionLevel = sound == .none ? .passive : .timeSensitive
 
             if glucoseUnit == .mgdL {
                 notification.badge = glucoseValue as NSNumber
@@ -232,10 +209,9 @@ private class GlucoseNotificationService {
             }
 
             notification.title = LocalizedString("Alert, high glucose")
-            notification.body = String(
-                format: LocalizedString("Your glucose %1$@ (%2$@) is dangerously high and needs to be treated."),
-                glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
-                glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? "?"
+            notification.body = String(format: LocalizedString("Your glucose %1$@ (%2$@) is dangerously high and needs to be treated."),
+                                       glucoseValue.asGlucose(unit: glucoseUnit, withUnit: true),
+                                       glucose.minuteChange?.asMinuteChange(glucoseUnit: glucoseUnit) ?? "?"
             )
 
             NotificationService.shared.add(identifier: Identifier.sensorGlucoseAlarm.rawValue, content: notification)

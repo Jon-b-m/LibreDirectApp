@@ -8,12 +8,12 @@ import Combine
 import Foundation
 
 func readAloudMiddelware() -> Middleware<AppState, AppAction> {
-    return readGlucoseMiddelware(service: {
+    return readAloudMiddelware(service: LazyService<ReadAloudService>(initialization: {
         ReadAloudService()
-    }())
+    }))
 }
 
-private func readGlucoseMiddelware(service: ReadAloudService) -> Middleware<AppState, AppAction> {
+private func readAloudMiddelware(service: LazyService<ReadAloudService>) -> Middleware<AppState, AppAction> {
     return { state, action, _ in
         switch action {
         case .addGlucoseValues(glucoseValues: let glucoseValues):
@@ -21,7 +21,7 @@ private func readGlucoseMiddelware(service: ReadAloudService) -> Middleware<AppS
                 break
             }
 
-            service.readGlucoseValues(sensorInterval: state.sensorInterval, glucoseValues: glucoseValues, glucoseUnit: state.glucoseUnit, alarmLow: state.alarmLow, alarmHigh: state.alarmHigh)
+            service.value.readGlucoseValues(sensorInterval: state.sensorInterval, glucoseValues: glucoseValues, glucoseUnit: state.glucoseUnit, alarmLow: state.alarmLow, alarmHigh: state.alarmHigh)
 
         default:
             break
@@ -34,6 +34,12 @@ private func readGlucoseMiddelware(service: ReadAloudService) -> Middleware<AppS
 // MARK: - ReadAloudService
 
 private class ReadAloudService {
+    // MARK: Lifecycle
+
+    init() {
+        AppLog.info("Create ReadAloudService")
+    }
+
     // MARK: Internal
 
     func readGlucoseValues(sensorInterval: Int, glucoseValues: [Glucose], glucoseUnit: GlucoseUnit, alarmLow: Int, alarmHigh: Int) {
@@ -80,14 +86,14 @@ private class ReadAloudService {
 
     // MARK: Private
 
-    private var speechSynthesizer: AVSpeechSynthesizer = {
+    private lazy var speechSynthesizer: AVSpeechSynthesizer = {
         AVSpeechSynthesizer()
     }()
 
     private var glucose: Glucose?
     private var alarm: AlarmType = .none
 
-    private var voice: AVSpeechSynthesisVoice? = {
+    private lazy var voice: AVSpeechSynthesisVoice? = {
         for availableVoice in AVSpeechSynthesisVoice.speechVoices() {
             if availableVoice.language == AVSpeechSynthesisVoice.currentLanguageCode(), availableVoice.quality == AVSpeechSynthesisVoiceQuality.enhanced {
                 AppLog.info("Found enhanced voice: \(availableVoice.name)")

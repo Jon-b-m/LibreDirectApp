@@ -10,37 +10,12 @@ import Foundation
 func bellmanAlarmMiddelware() -> Middleware<AppState, AppAction> {
     let subject = PassthroughSubject<AppAction, AppError>()
 
-    return bellmanAlarmMiddelware(service: {
+    return bellmanAlarmMiddelware(service: LazyService<BellmanAlarmService>(initialization: {
         BellmanAlarmService(subject: subject)
-    }(), subject: subject)
+    }), subject: subject)
 }
 
-// MARK: - BellmanConnectionState
-
-enum BellmanConnectionState: String {
-    case connected = "Connected"
-    case connecting = "Connecting"
-    case disconnected = "Disconnected"
-    case unknown = "Unknown"
-
-    // MARK: Lifecycle
-
-    init() {
-        self = .unknown
-    }
-
-    // MARK: Internal
-
-    var description: String {
-        rawValue
-    }
-
-    var localizedString: String {
-        LocalizedString(rawValue)
-    }
-}
-
-private func bellmanAlarmMiddelware(service: BellmanAlarmService, subject: PassthroughSubject<AppAction, AppError>) -> Middleware<AppState, AppAction> {
+private func bellmanAlarmMiddelware(service: LazyService<BellmanAlarmService>, subject: PassthroughSubject<AppAction, AppError>) -> Middleware<AppState, AppAction> {
     return { state, action, _ in
         switch action {
         case .startup:
@@ -48,19 +23,19 @@ private func bellmanAlarmMiddelware(service: BellmanAlarmService, subject: Passt
 
         case .setBellmanNotification(enabled: let enabled):
             if enabled {
-                service.connectDevice()
+                service.value.connectDevice()
             } else {
-                service.disconnectDevice()
+                service.value.disconnectDevice()
             }
 
         case .bellmanTestAlarm:
-            service.notifyDevice()
+            service.value.notifyDevice()
 
         case .addGlucoseValues(glucoseValues: let glucoseValues):
             guard state.bellmanAlarm else {
                 break
             }
-            
+
             guard let glucose = glucoseValues.last else {
                 AppLog.info("Guard: glucoseValues.last is nil")
                 break
@@ -88,12 +63,12 @@ private func bellmanAlarmMiddelware(service: BellmanAlarmService, subject: Passt
             if glucoseValue < state.alarmLow {
                 AppLog.info("Glucose alert, low: \(glucose.glucoseValue) < \(state.alarmLow)")
 
-                service.notifyDevice()
+                service.value.notifyDevice()
 
             } else if glucoseValue > state.alarmHigh {
                 AppLog.info("Glucose alert, high: \(glucose.glucoseValue) > \(state.alarmHigh)")
 
-                service.notifyDevice()
+                service.value.notifyDevice()
             }
 
         default:
@@ -104,12 +79,38 @@ private func bellmanAlarmMiddelware(service: BellmanAlarmService, subject: Passt
     }
 }
 
-// MARK: - BellmanNotificationService
+// MARK: - BellmanConnectionState
+
+enum BellmanConnectionState: String {
+    case connected = "Connected"
+    case connecting = "Connecting"
+    case disconnected = "Disconnected"
+    case unknown = "Unknown"
+
+    // MARK: Lifecycle
+
+    init() {
+        self = .unknown
+    }
+
+    // MARK: Internal
+
+    var description: String {
+        rawValue
+    }
+
+    var localizedString: String {
+        LocalizedString(rawValue)
+    }
+}
+
+// MARK: - BellmanAlarmService
 
 private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     // MARK: Lifecycle
 
     init(subject: PassthroughSubject<AppAction, AppError>) {
+        AppLog.info("Create BellmanAlarmService")
         super.init()
 
         self.subject = subject
@@ -127,7 +128,7 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
             oldValue?.delegate = nil
             peripheral?.delegate = self
 
-            UserDefaults.standard.bellmanPeripheralUuid = peripheral?.identifier.uuidString
+            UserDefaults.standard.bellmanPeripheralUUID = peripheral?.identifier.uuidString
         }
     }
 
@@ -236,7 +237,7 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
         AppLog.info("DidConnect peripheral: \(peripheral)")
 
         setConnectionState(connectionState: .connected)
-        peripheral.discoverServices([commandServiceUuid, deviceServiceUuid])
+        peripheral.discoverServices([commandServiceUUID, deviceServiceUUID])
     }
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -268,14 +269,14 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
                 AppLog.info("Characteristic Uuid: \(characteristic.uuid.description)")
                 AppLog.info("Characteristic: \(characteristic)")
 
-                if characteristic.uuid == commandCharacteristicUuid {
+                if characteristic.uuid == commandCharacteristicUUID {
                     AppLog.info("Characteristic: commandCharacteristicUuid")
                     commandCharacteristic = characteristic
 
                     peripheral.setNotifyValue(true, for: characteristic)
                 }
 
-                if characteristic.uuid == writeCharacteristicUuid {
+                if characteristic.uuid == writeCharacteristicUUID {
                     AppLog.info("Characteristic: writeCharacteristicUuid")
                     writeCharacteristic = characteristic
 
@@ -286,7 +287,7 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
                     }
                 }
 
-                if characteristic.uuid == firmwareCharacteristicUuid {
+                if characteristic.uuid == firmwareCharacteristicUUID {
                     AppLog.info("Characteristic: firmwareCharacteristicUuid")
                     firmwareCharacteristic = characteristic
 
@@ -311,7 +312,7 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
         AppLog.info("DidUpdateNotificationStateFor data: \(data.hex)")
         AppLog.info("DidUpdateNotificationStateFor data.count: \(data.count)")
 
-        if characteristic.uuid == commandCharacteristicUuid {
+        if characteristic.uuid == commandCharacteristicUUID {
             analysis([UInt8](data))
         }
     }
@@ -367,16 +368,16 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
     private var manager: CBCentralManager!
     private let managerQueue = DispatchQueue(label: "libre-direct.bellman-connection.queue")
 
-    private var commandServiceUuid = CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e")
-    private var deviceServiceUuid = CBUUID(string: "0000180a-0000-1000-8000-00805f9b34fb")
+    private var commandServiceUUID = CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e")
+    private var deviceServiceUUID = CBUUID(string: "0000180a-0000-1000-8000-00805f9b34fb")
 
-    private let firmwareCharacteristicUuid = CBUUID(string: "00002a26-0000-1000-8000-00805f9b34fb")
+    private let firmwareCharacteristicUUID = CBUUID(string: "00002a26-0000-1000-8000-00805f9b34fb")
     private var firmwareCharacteristic: CBCharacteristic?
 
-    private let writeCharacteristicUuid = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
+    private let writeCharacteristicUUID = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
     private var writeCharacteristic: CBCharacteristic?
 
-    private let commandCharacteristicUuid = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
+    private let commandCharacteristicUUID = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
     private var commandCharacteristic: CBCharacteristic?
 
     private var peripheralName: String {
@@ -438,13 +439,13 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
             return
         }
 
-        if let connectedPeripheral = manager.retrieveConnectedPeripherals(withServices: [commandServiceUuid]).first(where: {
+        if let connectedPeripheral = manager.retrieveConnectedPeripherals(withServices: [commandServiceUUID]).first(where: {
             guard let name = $0.name?.lowercased() else {
                 return false
             }
-            
+
             AppLog.info("Found peripheral, name: '\(name)' and searching for: '\(peripheralName)'")
-            
+
             return name == peripheralName
         }) {
             AppLog.info("Connect from retrievePeripherals: \(connectedPeripheral)")
@@ -487,7 +488,7 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
         if let peripheral = peripheral, let writeCharacteristic = writeCharacteristic {
             // without sender
             peripheral.writeValue(Data([218, 6, 0, 36, 0, 0, 0, 0, 0, 128, 0, 2, 129, 0, 1, 1]), for: writeCharacteristic, type: type)
-            
+
             // with sender
             // peripheral.writeValue(Data([112, 6, 0, 36, 175, 9, 0, 0, 0, 128, 0, 2, 129, 0, 1, 1]), for: writeCharacteristic, type: type)
         }
@@ -513,18 +514,18 @@ private class BellmanAlarmService: NSObject, CBCentralManagerDelegate, CBPeriphe
 
 private extension UserDefaults {
     private enum Keys: String {
-        case bellmanPeripheralUuid = "libre-direct.bellman.peripheral-uuid"
+        case bellmanPeripheralUUID = "libre-direct.bellman.peripheral-uuid"
     }
 
-    var bellmanPeripheralUuid: String? {
+    var bellmanPeripheralUUID: String? {
         get {
-            return UserDefaults.standard.string(forKey: Keys.bellmanPeripheralUuid.rawValue)
+            return UserDefaults.standard.string(forKey: Keys.bellmanPeripheralUUID.rawValue)
         }
         set {
             if let newValue = newValue {
-                UserDefaults.standard.setValue(newValue, forKey: Keys.bellmanPeripheralUuid.rawValue)
+                UserDefaults.standard.setValue(newValue, forKey: Keys.bellmanPeripheralUUID.rawValue)
             } else {
-                UserDefaults.standard.removeObject(forKey: Keys.bellmanPeripheralUuid.rawValue)
+                UserDefaults.standard.removeObject(forKey: Keys.bellmanPeripheralUUID.rawValue)
             }
         }
     }

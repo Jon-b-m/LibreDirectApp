@@ -124,12 +124,19 @@ func appReducer(state: inout AppState, action: AppAction) {
     case .setAlarmLow(lowerLimit: let lowerLimit):
         state.alarmLow = lowerLimit
 
-    case .setAlarmSnoozeUntil(untilDate: let untilDate, autosnooze: _):
+    case .setAlarmSnoozeUntil(untilDate: let untilDate, autosnooze: let autosnooze):
         if let untilDate = untilDate {
             state.alarmSnoozeUntil = untilDate
         } else {
             state.alarmSnoozeUntil = nil
         }
+        
+        if !autosnooze {
+            NotificationService.shared.stopSound()
+        }
+        
+    case .setAppleHealthExport(enabled: let enabled):
+        state.appleHealthExport = enabled
         
     case .setBellmanNotification(enabled: let enabled):
         state.bellmanAlarm = enabled
@@ -137,8 +144,8 @@ func appReducer(state: inout AppState, action: AppAction) {
     case .setBellmanConnectionState(connectionState: let connectionState):
         state.bellmanConnectionState = connectionState
         
-    case .setCalendarExport(enabled: let enabled):
-        state.calendarExport = enabled
+    case .setAppleCalendarExport(enabled: let enabled):
+        state.appleCalendarExport = enabled
         
     case .setChartShowLines(enabled: let enabled):
         state.chartShowLines = enabled
@@ -175,9 +182,6 @@ func appReducer(state: inout AppState, action: AppAction) {
     case .setHighGlucoseAlarmSound(sound: let sound):
         state.highGlucoseAlarmSound = sound
         
-    case .setInternalHttpServer(enabled: let enabled):
-        state.internalHttpServer = enabled
-        
     case .setIgnoreMute(enabled: let enabled):
         state.ignoreMute = enabled
         
@@ -201,7 +205,7 @@ func appReducer(state: inout AppState, action: AppAction) {
             state.customCalibration = []
             
             // reset store peripheral uuid
-            UserDefaults.standard.sensorPeripheralUuid = nil
+            UserDefaults.standard.sensorPeripheralUUID = nil
         }
         
         state.sensor = sensor

@@ -8,17 +8,17 @@ import Foundation
 import UserNotifications
 
 func connectionNotificationMiddelware() -> Middleware<AppState, AppAction> {
-    return connectionNotificationMiddelware(service: {
+    return connectionNotificationMiddelware(service: LazyService<ConnectionNotificationService>(initialization: {
         ConnectionNotificationService()
-    }())
+    }))
 }
 
-private func connectionNotificationMiddelware(service: ConnectionNotificationService) -> Middleware<AppState, AppAction> {
+private func connectionNotificationMiddelware(service: LazyService<ConnectionNotificationService>) -> Middleware<AppState, AppAction> {
     return { state, action, lastState in
         switch action {
         case .setConnectionAlarmSound(sound: let sound):
             if sound == .none {
-                service.clearAlarm()
+                service.value.clearAlarm()
             }
 
         case .setConnectionError(errorMessage: _, errorTimestamp: _, errorIsCritical: let errorIsCritical):
@@ -27,7 +27,7 @@ private func connectionNotificationMiddelware(service: ConnectionNotificationSer
                 break
             }
 
-            service.setSensorConnectionLostAlarm(errorIsCritical: errorIsCritical, ignoreMute: state.ignoreMute, sound: state.connectionAlarmSound)
+            service.value.setSensorConnectionLostAlarm(errorIsCritical: errorIsCritical, ignoreMute: state.ignoreMute, sound: state.connectionAlarmSound)
 
         case .setConnectionState(connectionState: let connectionState):
             guard state.connectionAlarm else {
@@ -36,10 +36,10 @@ private func connectionNotificationMiddelware(service: ConnectionNotificationSer
             }
 
             if lastState.connectionState == .connected, connectionState == .disconnected {
-                service.setSensorConnectionLostAlarm(errorIsCritical: false, ignoreMute: state.ignoreMute, sound: state.connectionAlarmSound)
+                service.value.setSensorConnectionLostAlarm(errorIsCritical: false, ignoreMute: state.ignoreMute, sound: state.connectionAlarmSound)
 
             } else if lastState.connectionState != .connected, connectionState == .connected {
-                service.clearAlarm()
+                service.value.clearAlarm()
             }
 
         case .addMissedReading:
@@ -49,7 +49,7 @@ private func connectionNotificationMiddelware(service: ConnectionNotificationSer
             }
 
             if state.missedReadings % 5 == 0 {
-                service.setSensorMissedReadingsAlarm(missedReadings: state.missedReadings, ignoreMute: state.ignoreMute, sound: state.connectionAlarmSound)
+                service.value.setSensorMissedReadingsAlarm(missedReadings: state.missedReadings, ignoreMute: state.ignoreMute, sound: state.connectionAlarmSound)
             }
 
         default:
@@ -63,6 +63,14 @@ private func connectionNotificationMiddelware(service: ConnectionNotificationSer
 // MARK: - ConnectionNotificationService
 
 private class ConnectionNotificationService {
+    // MARK: Lifecycle
+
+    init() {
+        AppLog.info("Create ConnectionNotificationService")
+    }
+
+    // MARK: Internal
+
     enum Identifier: String {
         case sensorConnectionAlarm = "libre-direct.notifications.sensor-connection-alarm"
     }
@@ -80,20 +88,14 @@ private class ConnectionNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = NotificationService.SilentSound
+            notification.sound = .none
             notification.title = LocalizedString("Alert, sensor connection lost")
 
             if errorIsCritical {
-                if #available(iOS 15.0, *) {
-                    notification.interruptionLevel = .critical
-                }
-
+                notification.interruptionLevel = .timeSensitive
                 notification.body = LocalizedString("The sensor cannot be connected and rejects all connection attempts. This problem makes it necessary to re-pair the sensor.")
             } else {
-                if #available(iOS 15.0, *) {
-                    notification.interruptionLevel = .passive
-                }
-
+                notification.interruptionLevel = .passive
                 notification.body = LocalizedString("The connection with the sensor has been interrupted. Normally this happens when the sensor is out of range or its transmission power is impaired.")
             }
 
@@ -114,12 +116,8 @@ private class ConnectionNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = NotificationService.SilentSound
-
-            if #available(iOS 15.0, *) {
-                notification.interruptionLevel = .passive
-            }
-
+            notification.sound = .none
+            notification.interruptionLevel = .passive
             notification.title = LocalizedString("OK, sensor connection established")
             notification.body = LocalizedString("The connection to the sensor has been successfully established and glucose data is received.")
 
@@ -136,12 +134,8 @@ private class ConnectionNotificationService {
             }
 
             let notification = UNMutableNotificationContent()
-            notification.sound = NotificationService.SilentSound
-
-            if #available(iOS 15.0, *) {
-                notification.interruptionLevel = .timeSensitive
-            }
-
+            notification.sound = .none
+            notification.interruptionLevel = .timeSensitive
             notification.title = String(format: LocalizedString("Warning, sensor missed %1$@ readings"), missedReadings.description)
             notification.body = LocalizedString("The connection to the sensor seems to exist, but no values are received. Faulty sensor data may be the cause.")
 
